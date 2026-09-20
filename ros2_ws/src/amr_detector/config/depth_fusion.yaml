@@ -1,0 +1,11 @@
+depth_fusion_3d:
+  ros__parameters:
+    target_frame: "base_link"
+
+    depth_image_topic: "/camera/depth/image_raw"
+    depth_camera_info_topic: "/camera/depth/camera_info"
+
+    rgb_width: 1280
+    rgb_height: 720
+
+    depth_scale: 0.001
