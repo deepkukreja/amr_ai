@@ -13,3 +13,16 @@ ros2_ws/log/
 # Model weights
 weights/
 *.pt
+
+# Historical experiment backups
+depth_fusion_3d_before_*.py
+depth_fusion_3d_sync.py
+depth_fusion_sync.py
+test_depth_publisher_before_*.py
+
+# Generated diagrams and analysis images
+*.gv
+*.pdf
+*.jpg
+*.png
+bus.jpg
