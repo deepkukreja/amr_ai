@@ -9,3 +9,7 @@ ros2_ws/install/
 ros2_ws/log/
 .ros/
 *.log
+
+# Model weights
+weights/
+*.pt
