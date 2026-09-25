@@ -1,0 +1,20 @@
+# AMR Dark Indoor Dataset v1
+# Session-level split — DO NOT CHANGE AFTER DATA COLLECTION
+
+TRAIN
+session_01
+session_02
+session_03
+session_04
+session_05
+session_06
+session_07
+session_08
+
+DEV
+session_09
+session_10
+
+TEST
+session_11
+session_12
