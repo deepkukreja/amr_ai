@@ -1,28 +1,53 @@
+# Python
 .venv/
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
 
-datasets/
+# Data / datasets
+datasets/*
+!datasets/README.md
+
+# Training outputs
 runs/
+results/local/
+
+# Model weights / large binaries
+*.pt
+*.pth
+*.onnx
+weights/
+
+# ROS 2
 ros2_ws/build/
 ros2_ws/install/
 ros2_ws/log/
 .ros/
+
+# Logs / caches
 *.log
+*.cache
 
-# Model weights
-weights/
-*.pt
-
-# Historical experiment backups
-depth_fusion_3d_before_*.py
-depth_fusion_3d_sync.py
-depth_fusion_sync.py
-test_depth_publisher_before_*.py
-
-# Generated diagrams and analysis images
+# Generated media
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.mp4
 *.gv
 *.pdf
-*.jpg
-*.png
-bus.jpg
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+
+# Large dataset / recording archives
+*.zip
+*.mcap
+
+# Generated diagrams / documents
+*.gv
+*.pdf

@@ -2,7 +2,11 @@ import rclpy
 from rclpy.node import Node
 
 from sensor_msgs.msg import Image
-from vision_msgs.msg import Detection2DArray, Detection2D, ObjectHypothesisWithPose
+from vision_msgs.msg import (
+    Detection2DArray,
+    Detection2D,
+    ObjectHypothesisWithPose,
+)
 from cv_bridge import CvBridge
 
 from ultralytics import YOLO
@@ -12,21 +16,33 @@ class AMRDetector(Node):
     def __init__(self):
         super().__init__("amr_detector")
 
+        # Parameters
+        self.declare_parameter("model_path", "")
         self.declare_parameter(
-            "model_path",
-            "/home/deepk12341234/amr_ai/runs/detect/runs/yolo26s_torwic_960/weights/best.pt",
+            "image_topic",
+            "/camera/color/image_raw",
         )
-        self.declare_parameter("image_topic", "/camera/color/image_raw")
-        self.declare_parameter("detection_topic", "/amr/detections")
+        self.declare_parameter(
+            "detection_topic",
+            "/amr/detections",
+        )
         self.declare_parameter("imgsz", 960)
         self.declare_parameter("device", "0")
 
         model_path = self.get_parameter("model_path").value
+
+        if not model_path:
+            raise RuntimeError(
+                "No model_path provided. Launch with "
+                "model_path:=/path/to/model.pt"
+            )
+
         image_topic = self.get_parameter("image_topic").value
         detection_topic = self.get_parameter("detection_topic").value
         imgsz = int(self.get_parameter("imgsz").value)
         device = self.get_parameter("device").value
 
+        # Model classes
         self.class_names = {
             0: "person",
             1: "fork_truck",
@@ -35,6 +51,7 @@ class AMRDetector(Node):
             4: "misc_dynamic_feature",
         }
 
+        # Per-class confidence thresholds
         self.class_thresholds = {
             0: 0.30,
             1: 0.25,
@@ -46,17 +63,21 @@ class AMRDetector(Node):
         self.imgsz = imgsz
         self.device = device
 
-        self.get_logger().info(f"Loading YOLO model: {model_path}")
+        self.get_logger().info(
+            f"Loading YOLO model: {model_path}"
+        )
 
         self.model = YOLO(model_path)
         self.bridge = CvBridge()
 
+        # Detection publisher
         self.detection_pub = self.create_publisher(
             Detection2DArray,
             detection_topic,
             10,
         )
 
+        # Camera image subscriber
         self.image_sub = self.create_subscription(
             Image,
             image_topic,
@@ -66,21 +87,36 @@ class AMRDetector(Node):
 
         self.frame_count = 0
 
-        self.get_logger().info("AMR YOLO detector started.")
-        self.get_logger().info(f"Image topic: {image_topic}")
-        self.get_logger().info(f"Detection topic: {detection_topic}")
-        self.get_logger().info(f"Image size: {imgsz}")
+        self.get_logger().info(
+            "AMR YOLO detector started."
+        )
+        self.get_logger().info(
+            f"Image topic: {image_topic}"
+        )
+        self.get_logger().info(
+            f"Detection topic: {detection_topic}"
+        )
+        self.get_logger().info(
+            f"Image size: {imgsz}"
+        )
+        self.get_logger().info(
+            f"Device: {device}"
+        )
 
     def image_callback(self, msg: Image):
+        # Convert ROS image to OpenCV image
         try:
             frame = self.bridge.imgmsg_to_cv2(
                 msg,
                 desired_encoding="bgr8",
             )
         except Exception as exc:
-            self.get_logger().error(f"cv_bridge conversion failed: {exc}")
+            self.get_logger().error(
+                f"cv_bridge conversion failed: {exc}"
+            )
             return
 
+        # Run YOLO inference
         try:
             results = self.model.predict(
                 source=frame,
@@ -90,7 +126,9 @@ class AMRDetector(Node):
                 verbose=False,
             )
         except Exception as exc:
-            self.get_logger().error(f"YOLO inference failed: {exc}")
+            self.get_logger().error(
+                f"YOLO inference failed: {exc}"
+            )
             return
 
         result = results[0]
@@ -98,19 +136,34 @@ class AMRDetector(Node):
         detections_msg = Detection2DArray()
         detections_msg.header = msg.header
 
+        # No detections
         if result.boxes is None or len(result.boxes) == 0:
             self.detection_pub.publish(detections_msg)
             return
 
         boxes = result.boxes.xyxy.cpu().numpy()
-        classes = result.boxes.cls.cpu().numpy().astype(int)
-        confidences = result.boxes.conf.cpu().numpy()
+        classes = (
+            result.boxes.cls.cpu()
+            .numpy()
+            .astype(int)
+        )
+        confidences = (
+            result.boxes.conf.cpu()
+            .numpy()
+        )
 
-        for box, cls, confidence in zip(boxes, classes, confidences):
+        for box, cls, confidence in zip(
+            boxes,
+            classes,
+            confidences,
+        ):
             cls = int(cls)
             confidence = float(confidence)
 
-            threshold = self.class_thresholds.get(cls, 0.25)
+            threshold = self.class_thresholds.get(
+                cls,
+                0.25,
+            )
 
             if confidence < threshold:
                 continue
@@ -121,25 +174,45 @@ class AMRDetector(Node):
             detection.header = msg.header
 
             hypothesis = ObjectHypothesisWithPose()
-            hypothesis.hypothesis.class_id = self.class_names.get(
-                cls,
-                str(cls),
+
+            hypothesis.hypothesis.class_id = (
+                self.class_names.get(
+                    cls,
+                    str(cls),
+                )
             )
+
             hypothesis.hypothesis.score = confidence
 
             detection.results.append(hypothesis)
 
-            width = max(0.0, x2 - x1)
-            height = max(0.0, y2 - y1)
+            width = max(
+                0.0,
+                x2 - x1,
+            )
+            height = max(
+                0.0,
+                y2 - y1,
+            )
 
-            detection.bbox.center.position.x = float((x1 + x2) / 2.0)
-            detection.bbox.center.position.y = float((y1 + y2) / 2.0)
+            detection.bbox.center.position.x = float(
+                (x1 + x2) / 2.0
+            )
+
+            detection.bbox.center.position.y = float(
+                (y1 + y2) / 2.0
+            )
+
             detection.bbox.size_x = float(width)
             detection.bbox.size_y = float(height)
 
-            detections_msg.detections.append(detection)
+            detections_msg.detections.append(
+                detection
+            )
 
-        self.detection_pub.publish(detections_msg)
+        self.detection_pub.publish(
+            detections_msg
+        )
 
         self.frame_count += 1
 
@@ -160,6 +233,7 @@ def main(args=None):
         pass
     finally:
         node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == "__main__":

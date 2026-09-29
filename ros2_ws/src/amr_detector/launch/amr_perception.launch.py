@@ -1,23 +1,15 @@
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-from ament_index_python.packages import (
-    get_package_share_directory,
-    get_package_prefix,
-)
+
+from ament_index_python.packages import get_package_share_directory
 import os
 
 
 def generate_launch_description():
 
     package_share = get_package_share_directory("amr_detector")
-    package_prefix = get_package_prefix("amr_detector")
-
-    detector_script = os.path.join(
-        package_prefix,
-        "lib",
-        "amr_detector",
-        "detector_node",
-    )
 
     depth_fusion_config = os.path.join(
         package_share,
@@ -25,12 +17,22 @@ def generate_launch_description():
         "depth_fusion.yaml",
     )
 
+    model_path = LaunchConfiguration("model_path")
+
     return LaunchDescription([
+        DeclareLaunchArgument(
+            "model_path",
+            description="Absolute path to the YOLO model checkpoint",
+        ),
+
         Node(
-            executable="/home/deepk12341234/amr_ai/.venv/bin/python",
-            arguments=[detector_script],
+            package="amr_detector",
+            executable="detector_node",
             name="amr_detector",
             output="screen",
+            parameters=[{
+                "model_path": model_path,
+            }],
         ),
 
         Node(
