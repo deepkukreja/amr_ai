@@ -154,6 +154,16 @@ The repository does **not** contain all images and annotations. The local `datas
 
 Start with [the dataset guide](datasets/README.md) and [the inventory](docs/data_inventory.md). Do not assume that a folder name proves that a dataset is annotated or safe to redistribute. The inventory is a local snapshot and can be stale on another machine.
 
+### Check dataset availability
+
+Run from the repository root:
+
+```bash
+python3 scripts/check_dataset_setup.py
+```
+
+To check another checkout, use `--root /path/to/amr_ai`. The checker is read-only. Missing images in a fresh clone are expected because datasets are not stored in GitHub. Paths under `/tmp/` are machine-specific and may no longer exist. This checks path availability, not annotation quality or the scientific validity of evaluation splits.
+
 Once the data is available, validate the YAML configuration and all referenced files before training. Do not download or extract every dataset just to begin learning; start with one small, authorised, labelled dataset and its documented configuration.
 
 ## 8. Important path rules
