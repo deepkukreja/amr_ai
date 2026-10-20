@@ -306,3 +306,82 @@ def test_transform_returns_none_when_tf_lookup_fails(
         "TF transform failed "
         "camera_depth_optical_frame -> base_link: transform unavailable"
     )
+
+
+def test_callback_publishes_valid_3d_detection(node_module, monkeypatch):
+    def vector():
+        return SimpleNamespace(x=0.0, y=0.0, z=0.0)
+
+    def orientation():
+        return SimpleNamespace(x=0.0, y=0.0, z=0.0, w=1.0)
+
+    class FakeDetection3D:
+        def __init__(self):
+            self.header = None
+            self.results = []
+            self.id = ""
+            self.bbox = SimpleNamespace(
+                center=SimpleNamespace(
+                    position=vector(),
+                    orientation=orientation(),
+                ),
+                size=vector(),
+            )
+
+    class FakeObjectHypothesisWithPose:
+        def __init__(self):
+            self.hypothesis = SimpleNamespace(class_id="", score=0.0)
+            self.pose = SimpleNamespace(
+                pose=SimpleNamespace(
+                    position=vector(),
+                    orientation=orientation(),
+                )
+            )
+
+    monkeypatch.setattr(node_module, "Detection3D", FakeDetection3D)
+    monkeypatch.setattr(
+        node_module, "ObjectHypothesisWithPose",
+        FakeObjectHypothesisWithPose,
+    )
+
+    node, logger, publisher = make_node(node_module.DepthFusion3D)
+
+    node.latest_depth_image = np.full((20, 20), 1250, dtype=np.uint16)
+    node.latest_depth_header = SimpleNamespace(
+        frame_id="camera_depth_optical_frame",
+        stamp=SimpleNamespace(sec=12, nanosec=0),
+    )
+    node.camera_info_received = True
+    node.rgb_width = 20
+    node.rgb_height = 20
+    node.target_frame = "base_link"
+
+    node.sample_depth = Mock(return_value=1.25)
+    node.pixel_to_3d = Mock(return_value=(0.1, 0.2, 1.25))
+    node.transform_point_to_target = Mock(
+        return_value=(1.1, 2.2, 3.25)
+    )
+
+    node.detection_callback(make_detection_message())
+
+    publisher.publish.assert_called_once()
+    output = publisher.publish.call_args.args[0]
+
+    assert output.header.frame_id == "base_link"
+    assert len(output.detections) == 1
+
+    detection = output.detections[0]
+    result = detection.results[0]
+
+    assert result.hypothesis.class_id == "person"
+    assert result.hypothesis.score == pytest.approx(0.91)
+    assert result.pose.pose.position.x == pytest.approx(1.1)
+    assert result.pose.pose.position.y == pytest.approx(2.2)
+    assert result.pose.pose.position.z == pytest.approx(3.25)
+
+    assert detection.bbox.center.position.x == pytest.approx(1.1)
+    assert detection.bbox.center.position.y == pytest.approx(2.2)
+    assert detection.bbox.center.position.z == pytest.approx(3.25)
+
+    node.transform_point_to_target.assert_called_once()
+    logger.warn.assert_not_called()
