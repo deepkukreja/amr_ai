@@ -385,3 +385,91 @@ def test_callback_publishes_valid_3d_detection(node_module, monkeypatch):
 
     node.transform_point_to_target.assert_called_once()
     logger.warn.assert_not_called()
+
+
+def test_callback_skips_invalid_detection_and_publishes_valid_one(
+    node_module, monkeypatch
+):
+    def vector():
+        return SimpleNamespace(x=0.0, y=0.0, z=0.0)
+
+    def orientation():
+        return SimpleNamespace(x=0.0, y=0.0, z=0.0, w=1.0)
+
+    class FakeDetection3D:
+        def __init__(self):
+            self.header = None
+            self.results = []
+            self.id = ""
+            self.bbox = SimpleNamespace(
+                center=SimpleNamespace(
+                    position=vector(),
+                    orientation=orientation(),
+                ),
+                size=vector(),
+            )
+
+    class FakeObjectHypothesisWithPose:
+        def __init__(self):
+            self.hypothesis = SimpleNamespace(class_id="", score=0.0)
+            self.pose = SimpleNamespace(
+                pose=SimpleNamespace(
+                    position=vector(),
+                    orientation=orientation(),
+                )
+            )
+
+    monkeypatch.setattr(node_module, "Detection3D", FakeDetection3D)
+    monkeypatch.setattr(
+        node_module,
+        "ObjectHypothesisWithPose",
+        FakeObjectHypothesisWithPose,
+    )
+
+    node, logger, publisher = make_node(node_module.DepthFusion3D)
+
+    node.latest_depth_image = np.full((20, 20), 1250, dtype=np.uint16)
+    node.latest_depth_header = SimpleNamespace(
+        frame_id="camera_depth_optical_frame",
+        stamp=SimpleNamespace(sec=12, nanosec=0),
+    )
+    node.camera_info_received = True
+    node.rgb_width = 20
+    node.rgb_height = 20
+    node.target_frame = "base_link"
+
+    message = make_detection_message()
+    invalid_detection = message.detections[0]
+    invalid_detection.results[0].hypothesis.class_id = "bad_object"
+
+    another_message = make_detection_message()
+    valid_detection = another_message.detections[0]
+    valid_detection.results[0].hypothesis.class_id = "person"
+
+    message.detections = [invalid_detection, valid_detection]
+
+    node.sample_depth = Mock(return_value=1.25)
+    node.pixel_to_3d = Mock(return_value=(0.1, 0.2, 1.25))
+    node.transform_point_to_target = Mock(
+        side_effect=[None, (1.1, 2.2, 3.25)]
+    )
+
+    node.detection_callback(message)
+
+    assert node.transform_point_to_target.call_count == 2
+
+    logger.warn.assert_called_once_with(
+        "Skipping invalid 3D point for bad_object"
+    )
+
+    publisher.publish.assert_called_once()
+    output = publisher.publish.call_args.args[0]
+
+    assert output.header.frame_id == "base_link"
+    assert len(output.detections) == 1
+    assert output.detections[0].results[0].hypothesis.class_id == "person"
+
+    position = output.detections[0].results[0].pose.pose.position
+    assert position.x == pytest.approx(1.1)
+    assert position.y == pytest.approx(2.2)
+    assert position.z == pytest.approx(3.25)
