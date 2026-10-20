@@ -17,6 +17,8 @@ import time
 import numpy as np
 import rclpy
 from rclpy.node import Node
+from rclpy.time import Time
+from tf2_ros import Buffer, TransformListener
 
 from sensor_msgs.msg import Image, CameraInfo
 from vision_msgs.msg import (
@@ -53,6 +55,8 @@ def main():
     rclpy.init()
     node = Node("amr_depth_fusion_integration_test")
     received = []
+    tf_buffer = Buffer()
+    tf_listener = TransformListener(tf_buffer, node)
 
     depth_pub = node.create_publisher(
         Image, "/camera/depth/image_raw", 10
@@ -92,6 +96,22 @@ def main():
             print("FAIL: Production node subscriptions were not found.")
             return 1
 
+        print("Waiting for the static test transform...")
+        tf_deadline = time.monotonic() + 5.0
+        while time.monotonic() < tf_deadline:
+            rclpy.spin_once(node, timeout_sec=0.1)
+            if tf_buffer.can_transform(
+                "base_link", "camera_depth_optical_frame", Time()
+            ):
+                break
+
+        if not tf_buffer.can_transform(
+            "base_link", "camera_depth_optical_frame", Time()
+        ):
+            print("FAIL: Test transform was not available.")
+            return 1
+
+        print("PASS: Static test transform is available.")
         stamp = node.get_clock().now().to_msg()
         frame_id = "camera_depth_optical_frame"
 
@@ -135,25 +155,51 @@ def main():
             make_detection(stamp, "outside_image", 0.88, 1400.0, 450.0)
         )
 
-        info_pub.publish(info)
-        depth_pub.publish(depth)
+        def has_valid_output():
+            return any(
+                len(message.detections) == 1
+                and bool(message.detections[0].results)
+                and message.detections[0].results[0].hypothesis.class_id == "person"
+                for message in received
+            )
 
-        # Allow the depth-fusion node to receive the sensor inputs first.
-        time.sleep(0.75)
-        detection_pub.publish(detections)
+        print("Publishing synthetic sensor messages until valid output arrives.")
+        deadline = time.monotonic() + 8.0
+        attempts = 0
 
-        print("Published synthetic CameraInfo, depth, and two detections.")
-        print("Waiting for /amr/detections_3d...")
+        while not has_valid_output() and time.monotonic() < deadline:
+            attempts += 1
 
-        deadline = time.monotonic() + 5.0
-        while not received and time.monotonic() < deadline:
-            rclpy.spin_once(node, timeout_sec=0.1)
+            # Re-publish sensor inputs so startup and DDS delivery timing
+            # cannot make the first detection fail unnecessarily.
+            info_pub.publish(info)
+            depth_pub.publish(depth)
 
-        if not received:
-            print("FAIL: No 3D detection message received within 5 seconds.")
+            sensor_wait = time.monotonic() + 0.2
+            while not has_valid_output() and time.monotonic() < sensor_wait:
+                rclpy.spin_once(node, timeout_sec=0.05)
+
+            if has_valid_output():
+                break
+
+            detection_pub.publish(detections)
+
+            response_wait = min(deadline, time.monotonic() + 0.3)
+            while not has_valid_output() and time.monotonic() < response_wait:
+                rclpy.spin_once(node, timeout_sec=0.05)
+
+        print(f"Completed {attempts} publish attempt(s).")
+
+        if not has_valid_output():
+            print("FAIL: No valid person detection received within 8 seconds.")
             return 1
 
-        output = received[-1]
+        output = next(
+            message for message in reversed(received)
+            if len(message.detections) == 1
+            and message.detections[0].results
+            and message.detections[0].results[0].hypothesis.class_id == "person"
+        )
 
         if output.header.frame_id != "base_link":
             print(f"FAIL: Expected frame base_link, got {output.header.frame_id!r}")
