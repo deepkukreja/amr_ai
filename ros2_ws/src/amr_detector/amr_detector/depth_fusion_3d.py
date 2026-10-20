@@ -4,6 +4,11 @@ import math
 
 import cv2
 import numpy as np
+
+from .depth_geometry import (
+    pixel_to_3d as pixel_to_3d_xyz,
+    sample_depth as sample_depth_meters,
+)
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
@@ -133,48 +138,18 @@ class DepthFusion3D(Node):
             "Waiting for /amr/detections + /camera/depth/image_raw"
         )
 
-    # -------------------------------------------------------------
-    # Depth sampling
-    # -------------------------------------------------------------
     def sample_depth(self, depth_image, u, v, radius=3):
+        return sample_depth_meters(
+            depth_image, u, v,
+            depth_scale=self.depth_scale, radius=radius,
+        )
 
-        h, w = depth_image.shape[:2]
-
-        u = int(round(u))
-        v = int(round(v))
-
-        x1 = max(0, u - radius)
-        x2 = min(w, u + radius + 1)
-
-        y1 = max(0, v - radius)
-        y2 = min(h, v + radius + 1)
-
-        patch = depth_image[y1:y2, x1:x2]
-
-        if patch.size == 0:
-            return None
-
-        depth_values = patch.astype(np.float32) * self.depth_scale
-
-        valid = depth_values[
-            np.isfinite(depth_values) &
-            (depth_values > 0.05)
-        ]
-
-        if valid.size == 0:
-            return None
-
-        return float(np.median(valid))
-
-    # -------------------------------------------------------------
-    # 3D back-projection
-    # -------------------------------------------------------------
     def pixel_to_3d(self, u, v, z):
-
-        x = (u - self.depth_cx) * z / self.depth_fx
-        y = (v - self.depth_cy) * z / self.depth_fy
-
-        return x, y, z
+        return pixel_to_3d_xyz(
+            u, v, z,
+            self.depth_fx, self.depth_fy,
+            self.depth_cx, self.depth_cy,
+        )
 
     # -------------------------------------------------------------
     # Depth callback
