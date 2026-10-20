@@ -575,3 +575,88 @@ def test_callback_handles_top_left_depth_image_boundary(
     assert len(output.detections) == 1
     assert output.detections[0].results[0].hypothesis.class_id == "person"
     logger.warn.assert_not_called()
+
+
+def test_callback_maps_rgb_pixel_to_different_depth_resolution(
+    node_module, monkeypatch
+):
+    def vector():
+        return SimpleNamespace(x=0.0, y=0.0, z=0.0)
+
+    def orientation():
+        return SimpleNamespace(x=0.0, y=0.0, z=0.0, w=1.0)
+
+    class FakeDetection3D:
+        def __init__(self):
+            self.header = None
+            self.results = []
+            self.id = ""
+            self.bbox = SimpleNamespace(
+                center=SimpleNamespace(
+                    position=vector(),
+                    orientation=orientation(),
+                ),
+                size=vector(),
+            )
+
+    class FakeObjectHypothesisWithPose:
+        def __init__(self):
+            self.hypothesis = SimpleNamespace(class_id="", score=0.0)
+            self.pose = SimpleNamespace(
+                pose=SimpleNamespace(
+                    position=vector(),
+                    orientation=orientation(),
+                )
+            )
+
+    monkeypatch.setattr(node_module, "Detection3D", FakeDetection3D)
+    monkeypatch.setattr(
+        node_module,
+        "ObjectHypothesisWithPose",
+        FakeObjectHypothesisWithPose,
+    )
+
+    node, logger, publisher = make_node(node_module.DepthFusion3D)
+
+    # RGB: 640x480; depth: 320x240.
+    depth_image = np.zeros((240, 320), dtype=np.uint16)
+    depth_image[120, 160] = 1250
+
+    node.latest_depth_image = depth_image
+    node.latest_depth_header = SimpleNamespace(
+        frame_id="camera_depth_optical_frame",
+        stamp=SimpleNamespace(sec=12, nanosec=0),
+    )
+    node.camera_info_received = True
+    node.depth_scale = 0.001
+    node.rgb_width = 640
+    node.rgb_height = 480
+    node.target_frame = "base_link"
+
+    # Track calls while retaining the real depth-sampling implementation.
+    node.sample_depth = Mock(wraps=node.sample_depth)
+    node.pixel_to_3d = Mock(return_value=(0.0, 0.0, 1.25))
+    node.transform_point_to_target = Mock(
+        return_value=(0.0, 0.0, 1.25)
+    )
+
+    message = make_detection_message()
+    message.detections[0].bbox.center.position.x = 320.0
+    message.detections[0].bbox.center.position.y = 240.0
+
+    node.detection_callback(message)
+
+    node.sample_depth.assert_called_once()
+    sampled_args = node.sample_depth.call_args
+    assert sampled_args.args[1:3] == (160.0, 120.0)
+
+    node.pixel_to_3d.assert_called_once()
+    xyz_args = node.pixel_to_3d.call_args.args
+    assert xyz_args == pytest.approx((160.0, 120.0, 1.25))
+
+    publisher.publish.assert_called_once()
+    output = publisher.publish.call_args.args[0]
+    assert output.header.frame_id == "base_link"
+    assert len(output.detections) == 1
+
+    logger.warn.assert_not_called()
