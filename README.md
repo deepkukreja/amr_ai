@@ -32,3 +32,27 @@ amr_ai/
 ├── ros2_ws/          ROS 2 integration
 └── archive/
     └── legacy/       Historical experiments and debugging code
+
+```
+
+## Research Status
+
+V6 is the development baseline recorded in the experiment history.
+V7 explores more realistic low-light adaptation. Its generation script
+is available, but model training and evaluation must be verified separately.
+
+## Documentation
+
+- [Experiment history](docs/experiments.md)
+- [Dataset guidance](datasets/README.md)
+- [SEW model comparison](results/sew_model_comparison.csv)
+- [SEW condition comparison](results/sew_condition_comparison.csv)
+- [THUD error analysis](results/thud_real_capture2_error_analysis_v2_v3.csv)
+- [Dark-indoor session split](configs/datasets/amr_dark_indoor_v1_session_split.txt)
+
+## Data and Model Artifacts
+
+Raw datasets, large recording archives, trained model weights, and generated
+experiment outputs are managed separately from the source repository.
+Check dataset licensing and preserve the defined train, development, and
+test separation when preparing or evaluating models.
