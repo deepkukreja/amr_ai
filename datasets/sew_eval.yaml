@@ -1,0 +1,6 @@
+
+train: sew_eval_images.txt
+val: sew_eval_images.txt
+
+names:
+  0: person

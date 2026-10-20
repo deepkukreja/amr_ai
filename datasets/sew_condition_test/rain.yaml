@@ -1,0 +1,4 @@
+train: rain.txt
+val: rain.txt
+names:
+  0: person

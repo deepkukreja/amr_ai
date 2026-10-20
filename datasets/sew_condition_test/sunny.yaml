@@ -1,0 +1,4 @@
+train: sunny.txt
+val: sunny.txt
+names:
+  0: person

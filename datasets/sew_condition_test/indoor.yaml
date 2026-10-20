@@ -1,0 +1,4 @@
+train: indoor.txt
+val: indoor.txt
+names:
+  0: person

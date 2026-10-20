@@ -1,0 +1,4 @@
+train: cloudy.txt
+val: cloudy.txt
+names:
+  0: person

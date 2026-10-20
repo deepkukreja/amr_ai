@@ -1,0 +1,5 @@
+train: overcast.txt
+val: overcast.txt
+
+names:
+  0: person

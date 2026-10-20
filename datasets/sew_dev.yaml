@@ -1,0 +1,5 @@
+train: torwic_sew_v3_real/dev_images.txt
+val: torwic_sew_v3_real/dev_images.txt
+
+names:
+  0: person

@@ -1,0 +1,7 @@
+
+train: sew_test_images.txt
+val: sew_test_images.txt
+test: sew_test_images.txt
+
+names:
+  0: person

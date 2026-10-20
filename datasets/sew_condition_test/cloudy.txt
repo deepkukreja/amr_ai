@@ -1,0 +1,15 @@
+./../sew/cloudy__Dataset_2024-08-05-11-34-00/images/cloudy_Dataset_2024-08-05-11-34-00_1722850441257737878.jpg
+./../sew/cloudy__Dataset_2024-08-05-11-34-00/images/cloudy_Dataset_2024-08-05-11-34-00_1722850442547860130.jpg
+./../sew/cloudy__Dataset_2024-08-05-11-34-00/images/cloudy_Dataset_2024-08-05-11-34-00_1722850443962672368.jpg
+./../sew/cloudy__Dataset_2024-08-05-11-34-00/images/cloudy_Dataset_2024-08-05-11-34-00_1722850445257711915.jpg
+./../sew/cloudy__Dataset_2024-08-05-11-34-00/images/cloudy_Dataset_2024-08-05-11-34-00_1722850446548001479.jpg
+./../sew/cloudy__Dataset_2024-08-05-11-34-00/images/cloudy_Dataset_2024-08-05-11-34-00_1722850447842706044.jpg
+./../sew/cloudy__Dataset_2024-08-05-11-34-00/images/cloudy_Dataset_2024-08-05-11-34-00_1722850449373153720.jpg
+./../sew/cloudy__Dataset_2024-08-05-11-34-00/images/cloudy_Dataset_2024-08-05-11-34-00_1722850450863160402.jpg
+./../sew/cloudy__Dataset_2024-08-05-11-34-00/images/cloudy_Dataset_2024-08-05-11-34-00_1722850452158194612.jpg
+./../sew/cloudy__Dataset_2024-08-05-11-34-00/images/cloudy_Dataset_2024-08-05-11-34-00_1722850455138352672.jpg
+./../sew/cloudy__Dataset_2024-08-05-11-34-00/images/cloudy_Dataset_2024-08-05-11-34-00_1722850456433309399.jpg
+./../sew/cloudy__Dataset_2024-08-05-11-34-00/images/cloudy_Dataset_2024-08-05-11-34-00_1722850457728315012.jpg
+./../sew/cloudy__Dataset_2024-08-05-11-34-00/images/cloudy_Dataset_2024-08-05-11-34-00_1722850459063339366.jpg
+./../sew/cloudy__Dataset_2024-08-05-11-34-00/images/cloudy_Dataset_2024-08-05-11-34-00_1722850460473563729.jpg
+./../sew/cloudy__Dataset_2024-08-05-11-34-00/images/cloudy_Dataset_2024-08-05-11-34-00_1722850461768580921.jpg

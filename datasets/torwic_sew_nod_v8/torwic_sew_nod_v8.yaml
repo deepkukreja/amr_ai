@@ -1,0 +1,9 @@
+train: train_images.txt
+val: ../torwic_sew_adapt_v6_real/images/val
+
+names:
+  0: person
+  1: fork_truck
+  2: cart_pallet_jack
+  3: rack_shelf
+  4: misc_dynamic_feature
