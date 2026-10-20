@@ -473,3 +473,105 @@ def test_callback_skips_invalid_detection_and_publishes_valid_one(
     assert position.x == pytest.approx(1.1)
     assert position.y == pytest.approx(2.2)
     assert position.z == pytest.approx(3.25)
+
+
+def test_callback_skips_detection_without_valid_depth(node_module):
+    node, logger, publisher = make_node(node_module.DepthFusion3D)
+
+    node.latest_depth_image = np.zeros((20, 20), dtype=np.uint16)
+    node.latest_depth_header = SimpleNamespace(
+        frame_id="camera_depth_optical_frame",
+        stamp=SimpleNamespace(sec=12, nanosec=0),
+    )
+    node.camera_info_received = True
+    node.depth_scale = 0.001
+    node.rgb_width = 20
+    node.rgb_height = 20
+    node.target_frame = "base_link"
+
+    node.detection_callback(make_detection_message())
+
+    logger.warn.assert_called_once_with("No valid depth for person")
+    publisher.publish.assert_called_once()
+
+    output = publisher.publish.call_args.args[0]
+    assert output.header.frame_id == "base_link"
+    assert output.detections == []
+
+
+def test_callback_handles_top_left_depth_image_boundary(
+    node_module, monkeypatch
+):
+    def vector():
+        return SimpleNamespace(x=0.0, y=0.0, z=0.0)
+
+    def orientation():
+        return SimpleNamespace(x=0.0, y=0.0, z=0.0, w=1.0)
+
+    class FakeDetection3D:
+        def __init__(self):
+            self.header = None
+            self.results = []
+            self.id = ""
+            self.bbox = SimpleNamespace(
+                center=SimpleNamespace(
+                    position=vector(),
+                    orientation=orientation(),
+                ),
+                size=vector(),
+            )
+
+    class FakeObjectHypothesisWithPose:
+        def __init__(self):
+            self.hypothesis = SimpleNamespace(class_id="", score=0.0)
+            self.pose = SimpleNamespace(
+                pose=SimpleNamespace(
+                    position=vector(),
+                    orientation=orientation(),
+                )
+            )
+
+    monkeypatch.setattr(node_module, "Detection3D", FakeDetection3D)
+    monkeypatch.setattr(
+        node_module,
+        "ObjectHypothesisWithPose",
+        FakeObjectHypothesisWithPose,
+    )
+
+    node, logger, publisher = make_node(node_module.DepthFusion3D)
+
+    depth_image = np.zeros((20, 20), dtype=np.uint16)
+    depth_image[0, 0] = 1250
+
+    node.latest_depth_image = depth_image
+    node.latest_depth_header = SimpleNamespace(
+        frame_id="camera_depth_optical_frame",
+        stamp=SimpleNamespace(sec=12, nanosec=0),
+    )
+    node.camera_info_received = True
+    node.depth_scale = 0.001
+    node.rgb_width = 20
+    node.rgb_height = 20
+    node.target_frame = "base_link"
+
+    message = make_detection_message()
+    message.detections[0].bbox.center.position.x = 0.0
+    message.detections[0].bbox.center.position.y = 0.0
+
+    node.pixel_to_3d = Mock(return_value=(0.0, 0.0, 1.25))
+    node.transform_point_to_target = Mock(
+        return_value=(0.0, 0.0, 1.25)
+    )
+
+    node.detection_callback(message)
+
+    node.pixel_to_3d.assert_called_once()
+    pixel_args = node.pixel_to_3d.call_args.args
+    assert pixel_args[0:2] == (0, 0)
+    assert pixel_args[2] == pytest.approx(1.25)
+
+    publisher.publish.assert_called_once()
+    output = publisher.publish.call_args.args[0]
+    assert len(output.detections) == 1
+    assert output.detections[0].results[0].hypothesis.class_id == "person"
+    logger.warn.assert_not_called()
