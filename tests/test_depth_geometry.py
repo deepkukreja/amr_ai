@@ -130,3 +130,39 @@ def test_timestamp_delta_seconds_is_absolute():
 )
 def test_depth_timestamp_freshness_boundary(delta, expected):
     assert is_depth_timestamp_fresh(delta) is expected
+
+
+from amr_detector.depth_geometry import depth_input_issue, is_valid_3d_point
+
+
+@pytest.mark.parametrize(
+    ("has_depth", "has_camera_info", "delta", "expected"),
+    [
+        (False, True, 0.01, "missing_depth"),
+        (True, False, 0.01, "missing_camera_info"),
+        (True, True, None, "missing_depth_timestamp"),
+        (True, True, 0.151, "stale_depth"),
+        (True, True, 0.15, None),
+    ],
+)
+def test_depth_input_issue_rejects_unusable_inputs(
+    has_depth, has_camera_info, delta, expected
+):
+    assert depth_input_issue(
+        has_depth, has_camera_info, delta
+    ) == expected
+
+
+@pytest.mark.parametrize(
+    ("point", "expected"),
+    [
+        ((1.0, 2.0, 3.0), True),
+        ((0.0, 0.0, 0.0), True),
+        (None, False),
+        ((1.0, float("nan"), 3.0), False),
+        ((1.0, float("inf"), 3.0), False),
+        ((1.0, 2.0), False),
+    ],
+)
+def test_valid_3d_point_requires_three_finite_values(point, expected):
+    assert is_valid_3d_point(point) is expected

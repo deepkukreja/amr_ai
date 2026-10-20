@@ -79,3 +79,34 @@ def timestamp_delta_seconds(
 def is_depth_timestamp_fresh(delta_seconds, max_age_seconds=0.15):
     """Return whether a depth frame is within the allowed time difference."""
     return abs(float(delta_seconds)) <= float(max_age_seconds)
+
+
+def depth_input_issue(
+    has_depth_image,
+    camera_info_received,
+    delta_seconds=None,
+    max_age_seconds=0.15,
+):
+    """Return a reason to reject unavailable or stale depth input."""
+    if not has_depth_image:
+        return "missing_depth"
+    if not camera_info_received:
+        return "missing_camera_info"
+    if delta_seconds is None:
+        return "missing_depth_timestamp"
+    if not is_depth_timestamp_fresh(delta_seconds, max_age_seconds):
+        return "stale_depth"
+    return None
+
+
+def is_valid_3d_point(point):
+    """Check that a transformed XYZ point contains three finite values."""
+    if point is None:
+        return False
+
+    try:
+        values = np.asarray(point, dtype=float)
+    except (TypeError, ValueError):
+        return False
+
+    return values.shape == (3,) and bool(np.all(np.isfinite(values)))

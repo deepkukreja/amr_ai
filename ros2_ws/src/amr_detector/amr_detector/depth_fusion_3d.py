@@ -6,8 +6,9 @@ import cv2
 import numpy as np
 
 from .depth_geometry import (
-    is_depth_timestamp_fresh,
+    depth_input_issue,
     pixel_to_3d as pixel_to_3d_xyz,
+    is_valid_3d_point,
     rgb_to_depth_pixel,
     sample_depth as sample_depth_meters,
     timestamp_delta_seconds,
@@ -238,32 +239,44 @@ class DepthFusion3D(Node):
     # -------------------------------------------------------------
     def detection_callback(self, detection_msg):
 
-        if self.latest_depth_image is None:
-            self.get_logger().warn(
-                "No depth frame available yet."
+        max_depth_age = 0.15
+        depth_time_delta = None
+
+        if (
+            self.latest_depth_image is not None
+            and self.camera_info_received
+            and self.latest_depth_header is not None
+        ):
+            detection_stamp = detection_msg.header.stamp
+            depth_stamp = self.latest_depth_header.stamp
+
+            depth_time_delta = timestamp_delta_seconds(
+                detection_stamp.sec,
+                detection_stamp.nanosec,
+                depth_stamp.sec,
+                depth_stamp.nanosec,
             )
-            return
 
-        if not self.camera_info_received:
-            self.get_logger().warn(
-                "No CameraInfo received yet."
-            )
-            return
-
-        # Reject depth that is too far from the detection timestamp.
-        detection_stamp = detection_msg.header.stamp
-        depth_stamp = self.latest_depth_header.stamp
-
-        depth_time_delta = timestamp_delta_seconds(
-            detection_stamp.sec,
-            detection_stamp.nanosec,
-            depth_stamp.sec,
-            depth_stamp.nanosec,
+        issue = depth_input_issue(
+            self.latest_depth_image is not None,
+            self.camera_info_received,
+            depth_time_delta,
+            max_depth_age,
         )
 
-        max_depth_age = 0.15
+        if issue == "missing_depth":
+            self.get_logger().warn("No depth frame available yet.")
+            return
 
-        if not is_depth_timestamp_fresh(depth_time_delta, max_depth_age):
+        if issue == "missing_camera_info":
+            self.get_logger().warn("No CameraInfo received yet.")
+            return
+
+        if issue == "missing_depth_timestamp":
+            self.get_logger().warn("Depth frame timestamp unavailable.")
+            return
+
+        if issue == "stale_depth":
             self.get_logger().warn(
                 f"Depth timestamp difference too large: "
                 f"{depth_time_delta:.3f} s"
@@ -330,7 +343,10 @@ class DepthFusion3D(Node):
                 output.header.stamp,
             )
 
-            if transformed is None:
+            if not is_valid_3d_point(transformed):
+                self.get_logger().warn(
+                    f"Skipping invalid 3D point for {class_id}"
+                )
                 continue
 
             x, y, z = transformed
