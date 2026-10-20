@@ -7,7 +7,9 @@ import numpy as np
 
 from .depth_geometry import (
     pixel_to_3d as pixel_to_3d_xyz,
+    rgb_to_depth_pixel,
     sample_depth as sample_depth_meters,
+    timestamp_delta_seconds,
 )
 import rclpy
 from rclpy.node import Node
@@ -248,16 +250,15 @@ class DepthFusion3D(Node):
             return
 
         # Reject depth that is too far from the detection timestamp.
-        detection_time = rclpy.time.Time.from_msg(
-            detection_msg.header.stamp
-        )
-        depth_time = rclpy.time.Time.from_msg(
-            self.latest_depth_header.stamp
-        )
+        detection_stamp = detection_msg.header.stamp
+        depth_stamp = self.latest_depth_header.stamp
 
-        depth_time_delta = abs(
-            (detection_time - depth_time).nanoseconds
-        ) / 1e9
+        depth_time_delta = timestamp_delta_seconds(
+            detection_stamp.sec,
+            detection_stamp.nanosec,
+            depth_stamp.sec,
+            depth_stamp.nanosec,
+        )
 
         max_depth_age = 0.15
 
@@ -296,8 +297,14 @@ class DepthFusion3D(Node):
 
             depth_h, depth_w = depth_image.shape[:2]
 
-            u_depth = u_rgb * depth_w / self.rgb_width
-            v_depth = v_rgb * depth_h / self.rgb_height
+            u_depth, v_depth = rgb_to_depth_pixel(
+                u_rgb,
+                v_rgb,
+                self.rgb_width,
+                self.rgb_height,
+                depth_w,
+                depth_h,
+            )
 
             z = self.sample_depth(
                 depth_image,

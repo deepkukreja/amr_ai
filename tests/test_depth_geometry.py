@@ -14,7 +14,7 @@ PACKAGE_ROOT = (
 )
 sys.path.insert(0, str(PACKAGE_ROOT))
 
-from amr_detector.depth_geometry import pixel_to_3d, sample_depth
+from amr_detector.depth_geometry import pixel_to_3d, sample_depth, rgb_to_depth_pixel, timestamp_delta_seconds
 
 
 def test_sample_depth_converts_millimetres_to_metres():
@@ -86,3 +86,33 @@ def test_pixel_to_3d_principal_point_has_zero_lateral_offset():
     )
 
     assert result == pytest.approx((0.0, 0.0, 3.0))
+
+
+def test_rgb_to_depth_pixel_scales_coordinates():
+    result = rgb_to_depth_pixel(
+        u_rgb=640,
+        v_rgb=360,
+        rgb_width=1280,
+        rgb_height=720,
+        depth_width=320,
+        depth_height=180,
+    )
+
+    assert result == pytest.approx((160, 90))
+
+
+def test_timestamp_delta_seconds_handles_fractional_seconds():
+    result = timestamp_delta_seconds(
+        10, 900_000_000,
+        11, 100_000_000,
+    )
+
+    assert result == pytest.approx(0.2)
+
+
+def test_timestamp_delta_seconds_is_absolute():
+    forward = timestamp_delta_seconds(10, 0, 11, 200_000_000)
+    reverse = timestamp_delta_seconds(11, 200_000_000, 10, 0)
+
+    assert forward == pytest.approx(1.2)
+    assert reverse == pytest.approx(1.2)
