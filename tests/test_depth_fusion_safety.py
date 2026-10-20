@@ -660,3 +660,99 @@ def test_callback_maps_rgb_pixel_to_different_depth_resolution(
     assert len(output.detections) == 1
 
     logger.warn.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "u_rgb,v_rgb",
+    [
+        (-1.0, 10.0),
+        (20.0, 10.0),
+        (10.0, -1.0),
+        (10.0, 20.0),
+    ],
+    ids=["left", "right", "top", "bottom"],
+)
+def test_callback_rejects_rgb_pixels_outside_image_bounds(
+    node_module, u_rgb, v_rgb
+):
+    node, logger, publisher = make_node(node_module.DepthFusion3D)
+
+    node.latest_depth_image = np.full((20, 20), 1000, dtype=np.uint16)
+    node.latest_depth_header = SimpleNamespace(
+        frame_id="camera_depth_optical_frame",
+        stamp=SimpleNamespace(sec=12, nanosec=0),
+    )
+    node.camera_info_received = True
+    node.rgb_width = 20
+    node.rgb_height = 20
+    node.target_frame = "base_link"
+
+    node.sample_depth = Mock()
+    node.pixel_to_3d = Mock()
+    node.transform_point_to_target = Mock()
+
+    message = make_detection_message()
+    message.detections[0].bbox.center.position.x = u_rgb
+    message.detections[0].bbox.center.position.y = v_rgb
+
+    node.detection_callback(message)
+
+    logger.warn.assert_called_once_with(
+        "RGB detection pixel outside image bounds for person"
+    )
+
+    node.sample_depth.assert_not_called()
+    node.pixel_to_3d.assert_not_called()
+    node.transform_point_to_target.assert_not_called()
+
+    publisher.publish.assert_called_once()
+    output = publisher.publish.call_args.args[0]
+    assert output.detections == []
+
+
+@pytest.mark.parametrize(
+    "u_rgb,v_rgb",
+    [
+        (-1.0, 10.0),
+        (20.0, 10.0),
+        (10.0, -1.0),
+        (10.0, 20.0),
+    ],
+    ids=["left", "right", "top", "bottom"],
+)
+def test_callback_rejects_rgb_pixels_outside_image_bounds(
+    node_module, u_rgb, v_rgb
+):
+    node, logger, publisher = make_node(node_module.DepthFusion3D)
+
+    node.latest_depth_image = np.full((20, 20), 1000, dtype=np.uint16)
+    node.latest_depth_header = SimpleNamespace(
+        frame_id="camera_depth_optical_frame",
+        stamp=SimpleNamespace(sec=12, nanosec=0),
+    )
+    node.camera_info_received = True
+    node.rgb_width = 20
+    node.rgb_height = 20
+    node.target_frame = "base_link"
+
+    node.sample_depth = Mock()
+    node.pixel_to_3d = Mock()
+    node.transform_point_to_target = Mock()
+
+    message = make_detection_message()
+    message.detections[0].bbox.center.position.x = u_rgb
+    message.detections[0].bbox.center.position.y = v_rgb
+
+    node.detection_callback(message)
+
+    logger.warn.assert_called_once_with(
+        "RGB detection pixel outside image bounds for person"
+    )
+
+    node.sample_depth.assert_not_called()
+    node.pixel_to_3d.assert_not_called()
+    node.transform_point_to_target.assert_not_called()
+
+    publisher.publish.assert_called_once()
+    output = publisher.publish.call_args.args[0]
+    assert output.detections == []

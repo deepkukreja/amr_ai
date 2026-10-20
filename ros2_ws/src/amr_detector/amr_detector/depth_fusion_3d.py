@@ -309,6 +309,15 @@ class DepthFusion3D(Node):
             u_rgb = float(det.bbox.center.position.x)
             v_rgb = float(det.bbox.center.position.y)
 
+            if not (
+                0.0 <= u_rgb < self.rgb_width
+                and 0.0 <= v_rgb < self.rgb_height
+            ):
+                self.get_logger().warn(
+                    f"RGB detection pixel outside image bounds for {class_id}"
+                )
+                continue
+
             depth_h, depth_w = depth_image.shape[:2]
 
             u_depth, v_depth = rgb_to_depth_pixel(
