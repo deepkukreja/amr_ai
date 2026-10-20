@@ -14,7 +14,7 @@ PACKAGE_ROOT = (
 )
 sys.path.insert(0, str(PACKAGE_ROOT))
 
-from amr_detector.depth_geometry import pixel_to_3d, sample_depth, rgb_to_depth_pixel, timestamp_delta_seconds
+from amr_detector.depth_geometry import pixel_to_3d, sample_depth, rgb_to_depth_pixel, timestamp_delta_seconds, is_depth_timestamp_fresh
 
 
 def test_sample_depth_converts_millimetres_to_metres():
@@ -116,3 +116,17 @@ def test_timestamp_delta_seconds_is_absolute():
 
     assert forward == pytest.approx(1.2)
     assert reverse == pytest.approx(1.2)
+
+
+@pytest.mark.parametrize(
+    ("delta", "expected"),
+    [
+        (0.10, True),
+        (0.15, True),
+        (0.150001, False),
+        (-0.10, True),
+        (-0.16, False),
+    ],
+)
+def test_depth_timestamp_freshness_boundary(delta, expected):
+    assert is_depth_timestamp_fresh(delta) is expected

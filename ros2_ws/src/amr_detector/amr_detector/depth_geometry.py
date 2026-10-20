@@ -74,3 +74,8 @@ def timestamp_delta_seconds(
     second_ns = int(second_sec) * 1_000_000_000 + int(second_nanosec)
 
     return abs(first_ns - second_ns) / 1_000_000_000
+
+
+def is_depth_timestamp_fresh(delta_seconds, max_age_seconds=0.15):
+    """Return whether a depth frame is within the allowed time difference."""
+    return abs(float(delta_seconds)) <= float(max_age_seconds)

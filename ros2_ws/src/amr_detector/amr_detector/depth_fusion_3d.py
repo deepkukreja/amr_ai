@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 
 from .depth_geometry import (
+    is_depth_timestamp_fresh,
     pixel_to_3d as pixel_to_3d_xyz,
     rgb_to_depth_pixel,
     sample_depth as sample_depth_meters,
@@ -262,7 +263,7 @@ class DepthFusion3D(Node):
 
         max_depth_age = 0.15
 
-        if depth_time_delta > max_depth_age:
+        if not is_depth_timestamp_fresh(depth_time_delta, max_depth_age):
             self.get_logger().warn(
                 f"Depth timestamp difference too large: "
                 f"{depth_time_delta:.3f} s"
