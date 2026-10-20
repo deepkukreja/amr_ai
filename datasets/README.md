@@ -228,3 +228,83 @@ If a check is incomplete, call the data **under review**. That is better than gu
 Write down the exact dataset YAML and its Git commit, checkpoint used to initialise training, image size, batch size, seed, number of epochs, optimiser/learning rate, and any augmentation changes. After training, save the results CSV, best checkpoint, class-level metrics, threshold selection method, and error examples outside Git unless they have been intentionally curated for publication.
 
 For this project, manually review false positives and false negatives per class, not only overall mAP. A model may improve rider detection while hurting person detection, or appear better at one confidence threshold while missing many distant people. Record both gains and regressions honestly.
+
+## Fresh-clone verification: what is and is not included
+
+A successful `git clone` does not mean that the datasets are ready for
+training. Large raw datasets, image files, annotation files, and other
+local data are intentionally excluded from ordinary Git history.
+
+### What we verified
+
+During the clean-clone check on 20 October 2026, the following was observed:
+
+- 49 files were tracked under `datasets/`, including configuration files,
+  image-list manifests, and this README.
+- 27 YAML configurations were inspected.
+- 21 referenced image-list manifests were present.
+- 16 configured image-directory targets were absent from the fresh clone.
+- Across the inspected manifests, 27,415 image references were checked.
+- None of those referenced image files was present in the fresh clone.
+
+These counts describe the repository and manifests at the time of this
+check. They may change as the project evolves.
+
+The missing images and directories are expected when the corresponding
+datasets have not been downloaded or copied into the local workspace.
+A missing target must not be mistaken for a successfully prepared dataset.
+
+### How to prepare a local dataset workspace
+
+1. Clone the repository and install the project's Python dependencies in an
+   appropriate virtual environment.
+2. Obtain each required dataset from its authorized source. Check its
+   usage terms, attribution requirements, and any sharing restrictions.
+3. Extract or copy the files into the expected local directory structure.
+   Do not rename dataset folders or files without also updating the
+   configurations and manifests that reference them.
+4. Check that every image-list entry resolves to an existing image and
+   that the corresponding annotation files are available where required.
+5. Check that the YAML class names and class IDs match the annotations.
+   The main road-scene task uses `person` and `rider`; other sources may
+   use different classes or annotation conventions.
+6. Inspect the training, validation, and test assignments before running
+   training or evaluation.
+7. Start an experiment only after its data paths, annotations, class
+   mapping, and splits have been verified.
+
+The configuration and manifest files describe where data should be found;
+they do not provide the underlying images or labels.
+
+### Important split and reproducibility cautions
+
+Some experimental configurations intentionally reuse an image list for
+more than one split. For example, a condition-specific configuration may
+point both `train` and `val` to the same manifest because it was created
+for a particular evaluation workflow. Do not assume that every YAML file
+is suitable for training.
+
+The `torwic_sew_v7_lowlight` configuration currently points both `val`
+and `test` to the same validation directory. This is not an independent
+test set. Do not report it as an untouched final test.
+
+The external NOD configurations and their manifests were not included in
+the portability commit described in the project history. Review those
+files and their data-access requirements separately before using them
+from a fresh clone.
+
+### Where the actual data should live
+
+Keep large or restricted datasets in approved local storage or an
+authorized external storage location. Give collaborators access through
+the appropriate source or sharing mechanism, and document how to obtain
+each dataset without publishing data that you are not permitted to share.
+
+Do not force-add the raw datasets, annotations, archives, or model weights
+to Git merely to make a fresh clone appear complete. Review data size,
+licensing, privacy, and distribution permissions first.
+
+For concepts, path handling, metrics, validation, and reproducible
+experiments, see [the learning guide](../docs/learning_guide.md).
+For experiment history and recorded results, see
+[the experiment notes](../docs/experiments.md).
