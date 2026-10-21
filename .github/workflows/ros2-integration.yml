@@ -1,0 +1,66 @@
+name: ROS 2 integration tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  depth-fusion-integration:
+    runs-on: ubuntu-24.04
+    container:
+      image: ubuntu:noble
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up ROS 2 Jazzy
+        uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: jazzy
+
+      - name: Install Python test dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            python3-numpy \
+            python3-pytest \
+            python3-yaml
+
+      - name: Install ROS package dependencies
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          if [ ! -f /etc/ros/rosdep/sources.list.d/20-default.list ]; then
+            rosdep init
+          fi
+          rosdep update
+          cd ros2_ws
+          rosdep install --from-paths src --ignore-src --rosdistro jazzy -r -y
+
+      - name: Build AMR detector
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          cd ros2_ws
+          colcon build --packages-select amr_detector
+
+      - name: Run unit tests
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          python3 -m pytest -q tests
+
+      - name: Run live ROS 2 integration test
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          source ros2_ws/install/setup.bash
+          python3 tools/run_depth_fusion_integration.py
