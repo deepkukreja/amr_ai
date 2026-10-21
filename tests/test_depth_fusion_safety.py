@@ -942,3 +942,69 @@ def test_invalid_camera_info_preserves_last_valid_intrinsics(
     ) == accepted_values
 
     logger.warn.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "intrinsics",
+    [
+        [],
+        [450.0] * 8,
+        [450.0] * 10,
+    ],
+    ids=["empty-matrix", "too-short", "too-long"],
+)
+def test_camera_info_rejects_wrong_matrix_length(
+    node_module, intrinsics
+):
+    node, logger, _ = make_node(node_module.DepthFusion3D)
+
+    node.camera_info_callback(SimpleNamespace(k=intrinsics))
+
+    assert node.camera_info_received is False
+    logger.warn.assert_called_once_with(
+        "Received CameraInfo with invalid K matrix."
+    )
+
+
+@pytest.mark.parametrize(
+    "intrinsics",
+    [
+        [],
+        [450.0] * 8,
+        [450.0] * 10,
+    ],
+    ids=["empty-matrix", "too-short", "too-long"],
+)
+def test_wrong_length_camera_info_preserves_valid_intrinsics(
+    node_module, intrinsics
+):
+    node, logger, _ = make_node(node_module.DepthFusion3D)
+
+    valid_intrinsics = [
+        500.0, 0.0, 300.0,
+        0.0, 510.0, 170.0,
+        0.0, 0.0, 1.0,
+    ]
+
+    node.camera_info_callback(SimpleNamespace(k=valid_intrinsics))
+
+    accepted_values = (
+        node.depth_fx,
+        node.depth_fy,
+        node.depth_cx,
+        node.depth_cy,
+    )
+
+    node.camera_info_callback(SimpleNamespace(k=intrinsics))
+
+    assert node.camera_info_received is True
+    assert (
+        node.depth_fx,
+        node.depth_fy,
+        node.depth_cx,
+        node.depth_cy,
+    ) == accepted_values
+
+    logger.warn.assert_called_once_with(
+        "Received CameraInfo with invalid K matrix."
+    )
