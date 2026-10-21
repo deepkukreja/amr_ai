@@ -183,10 +183,25 @@ class DepthFusion3D(Node):
             )
             return
 
-        self.depth_fx = float(camera_info_msg.k[0])
-        self.depth_fy = float(camera_info_msg.k[4])
-        self.depth_cx = float(camera_info_msg.k[2])
-        self.depth_cy = float(camera_info_msg.k[5])
+        fx = float(camera_info_msg.k[0])
+        fy = float(camera_info_msg.k[4])
+        cx = float(camera_info_msg.k[2])
+        cy = float(camera_info_msg.k[5])
+
+        if not all(
+            math.isfinite(value) for value in (fx, fy, cx, cy)
+        ) or fx <= 0.0 or fy <= 0.0:
+            self.get_logger().warn(
+                "Received CameraInfo with invalid intrinsics: "
+                "fx and fy must be positive and all intrinsic values "
+                "must be finite."
+            )
+            return
+
+        self.depth_fx = fx
+        self.depth_fy = fy
+        self.depth_cx = cx
+        self.depth_cy = cy
 
         if not self.camera_info_received:
             self.get_logger().info(

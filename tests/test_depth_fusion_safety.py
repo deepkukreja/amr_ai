@@ -860,3 +860,31 @@ def test_callback_rejects_extreme_finite_rgb_coordinates(
     publisher.publish.assert_called_once()
     output = publisher.publish.call_args.args[0]
     assert output.detections == []
+
+
+@pytest.mark.parametrize(
+    "intrinsics",
+    [
+        [0.0, 0.0, 320.0, 0.0, 450.0, 180.0, 0.0, 0.0, 1.0],
+        [450.0, 0.0, 320.0, 0.0, 0.0, 180.0, 0.0, 0.0, 1.0],
+        [float("nan"), 0.0, 320.0, 0.0, 450.0, 180.0, 0.0, 0.0, 1.0],
+        [450.0, 0.0, 320.0, 0.0, float("inf"), 180.0, 0.0, 0.0, 1.0],
+        [450.0, 0.0, float("nan"), 0.0, 450.0, 180.0, 0.0, 0.0, 1.0],
+        [-450.0, 0.0, 320.0, 0.0, 450.0, 180.0, 0.0, 0.0, 1.0],
+    ],
+    ids=[
+        "zero-fx",
+        "zero-fy",
+        "nan-fx",
+        "infinite-fy",
+        "nan-cx",
+        "negative-fx",
+    ],
+)
+def test_camera_info_rejects_invalid_intrinsics(node_module, intrinsics):
+    node, logger, _ = make_node(node_module.DepthFusion3D)
+
+    node.camera_info_callback(SimpleNamespace(k=intrinsics))
+
+    assert node.camera_info_received is False
+    logger.warn.assert_called_once()
