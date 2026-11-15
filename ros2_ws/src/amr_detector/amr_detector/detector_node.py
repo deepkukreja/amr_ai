@@ -10,6 +10,7 @@ from vision_msgs.msg import (
 from cv_bridge import CvBridge
 
 from ultralytics import YOLO
+from .label_contract import checkpoint_classes, class_thresholds
 
 
 class AMRDetector(Node):
@@ -42,24 +43,6 @@ class AMRDetector(Node):
         imgsz = int(self.get_parameter("imgsz").value)
         device = self.get_parameter("device").value
 
-        # Model classes
-        self.class_names = {
-            0: "person",
-            1: "fork_truck",
-            2: "cart_pallet_jack",
-            3: "rack_shelf",
-            4: "misc_dynamic_feature",
-        }
-
-        # Per-class confidence thresholds
-        self.class_thresholds = {
-            0: 0.30,
-            1: 0.25,
-            2: 0.35,
-            3: 0.30,
-            4: 0.35,
-        }
-
         self.imgsz = imgsz
         self.device = device
 
@@ -68,6 +51,9 @@ class AMRDetector(Node):
         )
 
         self.model = YOLO(model_path)
+        self.class_names = checkpoint_classes(self.model.names)
+        self.class_thresholds = class_thresholds(self.class_names)
+        self.get_logger().info(f"Checkpoint class contract: {self.class_names}")
         self.bridge = CvBridge()
 
         # Detection publisher
