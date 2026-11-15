@@ -1,0 +1,350 @@
+{
+  "checkpoints": {
+    "coco_candidate_sha256": "2f160e4b51e918d99cd009940bcc6c99e2fc394ff86dc29ebbb60a27359ec7f1",
+    "continuation_sha256": "f45c0ee8a47661eed05b4a8da44ce481a51f28eabb5a4b21d8a4c39650f34646",
+    "reference_sha256": "6372ac75302d49ee3df87e8b65ce6f71ca5b2d8bef6281da811299ac67b53e0c"
+  },
+  "dataset": {
+    "current_train_validation_clip_overlap": 0,
+    "current_train_validation_exact_duplicates": 0,
+    "manifest_sha256": "8f3edcd1ede3672d9e00f09778cde76aeb8c455fed0fa3ced55ad1aedb9d9360",
+    "train_boxes": 584,
+    "train_clips": 89,
+    "train_images": 221,
+    "validation_boxes": 151,
+    "validation_clips": 22,
+    "validation_images": 59,
+    "validation_images_seen_by_reference_ancestors": 59
+  },
+  "decision": "Keep reference selected; calibrated candidate offers higher measured recall and more false positives with effectively tied aggregate F1",
+  "development": {
+    "coco_candidate_fixed": {
+      "all": {
+        "f1": 0.5102040816326531,
+        "fn": 171,
+        "fp": 165,
+        "precision": 0.5147058823529411,
+        "recall": 0.5057803468208093,
+        "tp": 175
+      },
+      "class:person": {
+        "f1": 0.5185185185185185,
+        "fn": 79,
+        "fp": 103,
+        "precision": 0.48756218905472637,
+        "recall": 0.5536723163841808,
+        "tp": 98
+      },
+      "class:rider": {
+        "f1": 0.5,
+        "fn": 92,
+        "fp": 62,
+        "precision": 0.5539568345323741,
+        "recall": 0.4556213017751479,
+        "tp": 77
+      },
+      "timeofday:daytime": {
+        "f1": 0.5251141552511416,
+        "fn": 103,
+        "fp": 105,
+        "precision": 0.5227272727272727,
+        "recall": 0.5275229357798165,
+        "tp": 115
+      },
+      "timeofday:dusk": {
+        "f1": 0.5378151260504201,
+        "fn": 26,
+        "fp": 29,
+        "precision": 0.5245901639344263,
+        "recall": 0.5517241379310345,
+        "tp": 32
+      },
+      "timeofday:night": {
+        "f1": 0.43410852713178294,
+        "fn": 42,
+        "fp": 31,
+        "precision": 0.4745762711864407,
+        "recall": 0.4,
+        "tp": 28
+      },
+      "weather:clear": {
+        "f1": 0.5039872408293461,
+        "fn": 154,
+        "fp": 157,
+        "precision": 0.5015873015873016,
+        "recall": 0.5064102564102564,
+        "tp": 158
+      },
+      "weather:foggy": {
+        "f1": 0.5263157894736842,
+        "fn": 6,
+        "fp": 3,
+        "precision": 0.625,
+        "recall": 0.45454545454545453,
+        "tp": 5
+      },
+      "weather:overcast": {
+        "f1": 0.7058823529411765,
+        "fn": 3,
+        "fp": 2,
+        "precision": 0.75,
+        "recall": 0.6666666666666666,
+        "tp": 6
+      },
+      "weather:rainy": {
+        "f1": 0.5217391304347826,
+        "fn": 8,
+        "fp": 3,
+        "precision": 0.6666666666666666,
+        "recall": 0.42857142857142855,
+        "tp": 6
+      }
+    },
+    "coco_candidate_validation_selected": {
+      "all": {
+        "f1": 0.5120481927710844,
+        "fn": 176,
+        "fp": 148,
+        "precision": 0.5345911949685535,
+        "recall": 0.4913294797687861,
+        "tp": 170
+      },
+      "class:person": {
+        "f1": 0.5224719101123596,
+        "fn": 84,
+        "fp": 86,
+        "precision": 0.5195530726256983,
+        "recall": 0.5254237288135594,
+        "tp": 93
+      },
+      "class:rider": {
+        "f1": 0.5,
+        "fn": 92,
+        "fp": 62,
+        "precision": 0.5539568345323741,
+        "recall": 0.4556213017751479,
+        "tp": 77
+      },
+      "timeofday:daytime": {
+        "f1": 0.5258215962441315,
+        "fn": 106,
+        "fp": 96,
+        "precision": 0.5384615384615384,
+        "recall": 0.5137614678899083,
+        "tp": 112
+      },
+      "timeofday:dusk": {
+        "f1": 0.5486725663716814,
+        "fn": 27,
+        "fp": 24,
+        "precision": 0.5636363636363636,
+        "recall": 0.5344827586206896,
+        "tp": 31
+      },
+      "timeofday:night": {
+        "f1": 0.432,
+        "fn": 43,
+        "fp": 28,
+        "precision": 0.4909090909090909,
+        "recall": 0.38571428571428573,
+        "tp": 27
+      },
+      "weather:clear": {
+        "f1": 0.5057851239669422,
+        "fn": 159,
+        "fp": 140,
+        "precision": 0.5221843003412969,
+        "recall": 0.49038461538461536,
+        "tp": 153
+      },
+      "weather:foggy": {
+        "f1": 0.5263157894736842,
+        "fn": 6,
+        "fp": 3,
+        "precision": 0.625,
+        "recall": 0.45454545454545453,
+        "tp": 5
+      },
+      "weather:overcast": {
+        "f1": 0.7058823529411765,
+        "fn": 3,
+        "fp": 2,
+        "precision": 0.75,
+        "recall": 0.6666666666666666,
+        "tp": 6
+      },
+      "weather:rainy": {
+        "f1": 0.5217391304347826,
+        "fn": 8,
+        "fp": 3,
+        "precision": 0.6666666666666666,
+        "recall": 0.42857142857142855,
+        "tp": 6
+      }
+    },
+    "images": 166,
+    "objects": 346,
+    "person": 177,
+    "reference": {
+      "all": {
+        "f1": 0.5120772946859904,
+        "fn": 187,
+        "fp": 116,
+        "precision": 0.5781818181818181,
+        "recall": 0.4595375722543353,
+        "tp": 159
+      },
+      "class:person": {
+        "f1": 0.5060240963855421,
+        "fn": 93,
+        "fp": 71,
+        "precision": 0.5419354838709678,
+        "recall": 0.4745762711864407,
+        "tp": 84
+      },
+      "class:rider": {
+        "f1": 0.5190311418685121,
+        "fn": 94,
+        "fp": 45,
+        "precision": 0.625,
+        "recall": 0.4437869822485207,
+        "tp": 75
+      },
+      "timeofday:daytime": {
+        "f1": 0.5138539042821159,
+        "fn": 116,
+        "fp": 77,
+        "precision": 0.5698324022346368,
+        "recall": 0.46788990825688076,
+        "tp": 102
+      },
+      "timeofday:dusk": {
+        "f1": 0.5882352941176471,
+        "fn": 28,
+        "fp": 14,
+        "precision": 0.6818181818181818,
+        "recall": 0.5172413793103449,
+        "tp": 30
+      },
+      "timeofday:night": {
+        "f1": 0.4426229508196721,
+        "fn": 43,
+        "fp": 25,
+        "precision": 0.5192307692307693,
+        "recall": 0.38571428571428573,
+        "tp": 27
+      },
+      "weather:clear": {
+        "f1": 0.5149911816578483,
+        "fn": 166,
+        "fp": 109,
+        "precision": 0.5725490196078431,
+        "recall": 0.46794871794871795,
+        "tp": 146
+      },
+      "weather:foggy": {
+        "f1": 0.5882352941176471,
+        "fn": 6,
+        "fp": 1,
+        "precision": 0.8333333333333334,
+        "recall": 0.45454545454545453,
+        "tp": 5
+      },
+      "weather:overcast": {
+        "f1": 0.42857142857142855,
+        "fn": 6,
+        "fp": 2,
+        "precision": 0.6,
+        "recall": 0.3333333333333333,
+        "tp": 3
+      },
+      "weather:rainy": {
+        "f1": 0.43478260869565216,
+        "fn": 9,
+        "fp": 4,
+        "precision": 0.5555555555555556,
+        "recall": 0.35714285714285715,
+        "tp": 5
+      }
+    },
+    "rider": 169
+  },
+  "environment": {
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "python": "3.12.3",
+    "torch": "2.11.0+cu128",
+    "ultralytics": "8.4.156"
+  },
+  "fixed_confidence": {
+    "person": 0.15,
+    "rider": 0.25
+  },
+  "pending_annotation_batch": {
+    "clips": 54,
+    "daytime": 67,
+    "dusk": 11,
+    "images": 120,
+    "new_scene_clips": 0,
+    "night": 42,
+    "reviewed": 0,
+    "used_in_training": false
+  },
+  "provenance": "Source imagery: ThirdEye Labs Indian Road Dataset; local manual review. Raw data/labels/weights/caches are not included.",
+  "recorded_dates": [
+    "2026-11-15",
+    "2026-11-16"
+  ],
+  "scope": "Local person/rider research; repeatedly used development data, not independent final tests",
+  "threshold_selection": {
+    "development_search": false,
+    "grid_max": 0.9,
+    "grid_min": 0.05,
+    "grid_step": 0.01,
+    "objective": "class F1 subject to reference fixed-threshold validation recall",
+    "original_local_config_sha256": "25170d16b47ba477691697b36c4d8aebd628f59d688d1ac5cdd03c67d6a91f7a",
+    "split": "validation"
+  },
+  "training": {
+    "coco_candidate": {
+      "best_csv_epoch": 44,
+      "epochs": 56
+    },
+    "continuation": {
+      "best_csv_epoch": 11,
+      "epochs": 21
+    }
+  },
+  "validation_map": {
+    "coco_candidate": {
+      "fitness": 0.21862910685291967,
+      "metrics/mAP50(B)": 0.6328879581092124,
+      "metrics/mAP50-95(B)": 0.21862910685291967,
+      "metrics/precision(B)": 0.7594664433567622,
+      "metrics/recall(B)": 0.5686063218390804
+    },
+    "continuation": {
+      "fitness": 0.2015891154747181,
+      "metrics/mAP50(B)": 0.593214989231605,
+      "metrics/mAP50-95(B)": 0.2015891154747181,
+      "metrics/precision(B)": 0.7244915565824391,
+      "metrics/recall(B)": 0.5682445358114689
+    },
+    "reference": {
+      "fitness": 0.2036441495667641,
+      "metrics/mAP50(B)": 0.5959027423075121,
+      "metrics/mAP50-95(B)": 0.2036441495667641,
+      "metrics/precision(B)": 0.7196818199239858,
+      "metrics/recall(B)": 0.5628591954022988
+    }
+  },
+  "validation_selected_confidence": {
+    "person": 0.19,
+    "rider": 0.25
+  },
+  "verification": {
+    "fixed_candidate_cache_counts_reproduced": true,
+    "runtime_profile_changed": false,
+    "source_tests_passed": 93,
+    "weights_changed_by_calibration": false
+  }
+}

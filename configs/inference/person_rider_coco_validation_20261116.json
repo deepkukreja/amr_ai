@@ -1,0 +1,62 @@
+{
+  "checkpoint": "runs/experiments/indian_manual280_coco_frozen_20261115/weights/best.pt",
+  "checkpoint_sha256": "2f160e4b51e918d99cd009940bcc6c99e2fc394ff86dc29ebbb60a27359ec7f1",
+  "names": {
+    "0": "person",
+    "1": "rider"
+  },
+  "original_local_config_sha256": "25170d16b47ba477691697b36c4d8aebd628f59d688d1ac5cdd03c67d6a91f7a",
+  "path_normalization_note": "Checkpoint path normalized relative to repository; semantic values and checkpoint fingerprint match the frozen local profile.",
+  "protocol": {
+    "augment": false,
+    "batch": 4,
+    "class_names": {
+      "0": "person",
+      "1": "rider"
+    },
+    "conf": 0.01,
+    "imgsz": 960,
+    "iou": 0.7,
+    "matching_iou": 0.5,
+    "max_det": 300,
+    "nms": true,
+    "quantize": null
+  },
+  "reference_checkpoint_sha256": "6372ac75302d49ee3df87e8b65ce6f71ca5b2d8bef6281da811299ac67b53e0c",
+  "selection": {
+    "person": {
+      "f1": 0.6046511627906976,
+      "fn": 25,
+      "fp": 26,
+      "minimum_recall": 0.609375,
+      "precision": 0.6,
+      "recall": 0.609375,
+      "recall_floor_met": true,
+      "selection_split": "validation",
+      "threshold": 0.19,
+      "tp": 39
+    },
+    "rider": {
+      "f1": 0.5780346820809249,
+      "fn": 37,
+      "fp": 36,
+      "minimum_recall": 0.5632183908045977,
+      "precision": 0.5813953488372093,
+      "recall": 0.5747126436781609,
+      "recall_floor_met": true,
+      "selection_split": "validation",
+      "threshold": 0.25,
+      "tp": 50
+    }
+  },
+  "selection_date": "2026-11-16",
+  "selection_split": "validation",
+  "selector_source_sha256": "d661e6c0ba50f63e962e05b15858fed9f9ea00108a34aa1405a693d0056f65bf",
+  "status": "Research descriptor; not installed as a runtime profile",
+  "thresholds": {
+    "person": 0.19,
+    "rider": 0.25
+  },
+  "validation_candidate_cache_sha256": "70bc0e67bf75a620c67f1e744be531830598acefc63e473e5638879e1ebfebac",
+  "validation_reference_cache_sha256": "82dc66f66539d80cfed1362a59e8262387f6c4efb22c54cf4283e5d0e98e0c52"
+}

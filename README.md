@@ -1,5 +1,9 @@
 # AMR AI — Perception Research for an Autonomous Mobile Robot
 
+## Latest verified research — 16 November 2026
+
+The local continuation, fresh COCO-initialized comparison and validation-only threshold study are recorded in the [research summary](results/research/20261116/summary.json) and [reproduction guide](docs/research_reproduction.md). The calibrated candidate has higher measured recall with more false positives and effectively tied aggregate development F1; the existing reference remains selected. Raw data, weights and full evidence stay local.
+
 > **Purpose:** develop and evaluate camera-based detection for people and riders in the kinds of scenes an autonomous mobile robot (AMR) may encounter, including Indian roads, mixed traffic, indoor areas, rain, and low light.
 >
 > **Project status:** research and prototyping. The results documented here are not evidence of a safety-certified or deployment-ready navigation system.

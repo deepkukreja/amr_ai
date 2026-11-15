@@ -1,5 +1,7 @@
 # AMR Perception Experiment History
 
+For the later local inventory, validation-ancestry finding and completed training continuation, see [15 November 2026 continuation](training_20261115.md).
+
 This document records the tracked experiment history and reported results
 for the AMR perception research project. Raw datasets, model weights, and
 generated training outputs are maintained separately from this repository.
@@ -170,3 +172,11 @@ there is a deliberate, documented reason to version a particular artifact.
 
 A reported metric should always be traceable to its dataset split,
 checkpoint, and evaluation procedure.
+
+## Fresh COCO initialization and annotation expansion
+
+See [15 November fresh-initialization comparison](training_clean_baseline_20261115.md) for measured results and the pending 120-image training-only annotation batch.
+
+## Validation-only threshold selection, 16 November 2026
+
+See [threshold-selection follow-up](threshold_calibration_20261116.md) for the frozen validation-selected profile, reproduced fixed-protocol counts and the remaining recall/false-positive tradeoff.
