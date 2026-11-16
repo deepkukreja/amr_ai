@@ -1,0 +1,6 @@
+# Export-only additions; install in an isolated environment sharing training packages read-only.
+# Exact versions used for the recorded 16 November 2026 parity run.
+onnx==1.23.2
+onnxruntime==1.32.0
+ml_dtypes==0.6.0
+flatbuffers==25.12.19

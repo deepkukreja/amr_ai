@@ -180,3 +180,7 @@ See [15 November fresh-initialization comparison](training_clean_baseline_202611
 ## Validation-only threshold selection, 16 November 2026
 
 See [threshold-selection follow-up](threshold_calibration_20261116.md) for the frozen validation-selected profile, reproduced fixed-protocol counts and the remaining recall/false-positive tradeoff.
+
+## Dynamic FP32 ONNX parity, 16 November 2026
+
+See [ONNX export and parity](onnx_export_parity_20261116.md) for the isolated exporter, three dynamic-shape checks and matched 59-image validation.

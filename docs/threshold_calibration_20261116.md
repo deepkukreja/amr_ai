@@ -29,3 +29,5 @@ No model weights, existing annotations, runtime detector settings, cloud
 services, dependencies, commits or pushes were changed.
 
 A [portable measured summary](../results/research/20261116/summary.json) and [reproduction instructions](research_reproduction.md) are tracked in Git. Large raw evidence remains local.
+
+Publication note: the experiment records above describe the measured local work. Its source, portable summaries and reproduction notes were subsequently committed and pushed to GitHub on 16 November 2026. Datasets, weights and full caches remain local.

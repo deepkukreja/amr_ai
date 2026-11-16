@@ -1,0 +1,163 @@
+{
+  "artifact": {
+    "dynamic_batch_height_width": true,
+    "external_class_aware_nms_required": true,
+    "format": "ONNX",
+    "names": {
+      "0": "person",
+      "1": "rider"
+    },
+    "opset": 17,
+    "precision": "FP32",
+    "raw_one_to_many_output": true
+  },
+  "class_map50_95_absolute_gaps": {
+    "0": 0.0,
+    "1": 5.347433446045713e-08
+  },
+  "decision": "Parity passed; no runtime deployment or target-hardware performance claim",
+  "environment": {
+    "numpy": "2.5.3",
+    "onnx": "1.23.2",
+    "onnxruntime": "1.32.0",
+    "python": "3.12.3",
+    "torch": "2.11.0+cu128",
+    "ultralytics": "8.4.156"
+  },
+  "export_sha256": "8deda79dc51facf20262c8d1a3a5457d413c60a589a32e85e8716b1116d9f2d0",
+  "metric_absolute_gaps": {
+    "metrics/mAP50(B)": 0.0,
+    "metrics/mAP50-95(B)": 2.6737167230228565e-08
+  },
+  "onnx_validation": {
+    "artifact_sha256": "8deda79dc51facf20262c8d1a3a5457d413c60a589a32e85e8716b1116d9f2d0",
+    "classes": {
+      "0": {
+        "map50": 0.6484346279088399,
+        "map50_95": 0.26942209390539035
+      },
+      "1": {
+        "map50": 0.6167070479150483,
+        "map50_95": 0.16814909336637812
+      }
+    },
+    "metrics": {
+      "fitness": 0.21878559363588423,
+      "metrics/mAP50(B)": 0.6325708379119441,
+      "metrics/mAP50-95(B)": 0.21878559363588423,
+      "metrics/precision(B)": 0.7595333392915637,
+      "metrics/recall(B)": 0.5686063218390804
+    },
+    "protocol": {
+      "batch": 4,
+      "conf": 0.001,
+      "device": "cpu",
+      "images": 59,
+      "imgsz": 960,
+      "iou": 0.7,
+      "max_det": 300,
+      "nms": true,
+      "precision": "FP32",
+      "rect": true
+    }
+  },
+  "passes": true,
+  "pytorch_validation": {
+    "artifact_sha256": "2f160e4b51e918d99cd009940bcc6c99e2fc394ff86dc29ebbb60a27359ec7f1",
+    "classes": {
+      "0": {
+        "map50": 0.6484346279088399,
+        "map50_95": 0.26942209390539035
+      },
+      "1": {
+        "map50": 0.6167070479150483,
+        "map50_95": 0.16814914684071258
+      }
+    },
+    "metrics": {
+      "fitness": 0.21878562037305146,
+      "metrics/mAP50(B)": 0.6325708379119441,
+      "metrics/mAP50-95(B)": 0.21878562037305146,
+      "metrics/precision(B)": 0.7595332069823778,
+      "metrics/recall(B)": 0.5686063218390804
+    },
+    "protocol": {
+      "batch": 4,
+      "conf": 0.001,
+      "device": "cpu",
+      "images": 59,
+      "imgsz": 960,
+      "iou": 0.7,
+      "max_det": 300,
+      "nms": true,
+      "precision": "FP32",
+      "rect": true
+    }
+  },
+  "raw_parity": {
+    "cases": [
+      {
+        "coordinate_max_abs_error_pixels": 0.00164794921875,
+        "input_shape": [
+          1,
+          3,
+          512,
+          960
+        ],
+        "output_shape": [
+          1,
+          6,
+          10080
+        ],
+        "passes": true,
+        "score_max_abs_error": 1.259368218597956e-07
+      },
+      {
+        "coordinate_max_abs_error_pixels": 0.00250244140625,
+        "input_shape": [
+          2,
+          3,
+          960,
+          960
+        ],
+        "output_shape": [
+          2,
+          6,
+          18900
+        ],
+        "passes": true,
+        "score_max_abs_error": 1.4118359104031697e-07
+      },
+      {
+        "coordinate_max_abs_error_pixels": 0.00244140625,
+        "input_shape": [
+          4,
+          3,
+          512,
+          960
+        ],
+        "output_shape": [
+          4,
+          6,
+          10080
+        ],
+        "passes": true,
+        "score_max_abs_error": 1.319240254815668e-07
+      }
+    ],
+    "passes": true,
+    "provider": "CPUExecutionProvider",
+    "threads": 2
+  },
+  "recorded_date": "2026-11-16",
+  "scope": "Dynamic FP32 CPU export parity on local development validation, not Jetson performance or deployment",
+  "source_sha256": "2f160e4b51e918d99cd009940bcc6c99e2fc394ff86dc29ebbb60a27359ec7f1",
+  "source_unchanged": true,
+  "training_environment_unchanged": {
+    "numpy": "2.5.3",
+    "onnx_installed": false,
+    "onnxruntime_installed": false,
+    "torch": "2.11.0+cu128",
+    "ultralytics": "8.4.156"
+  }
+}

@@ -73,3 +73,7 @@ It adds spaced frames from existing TRAIN clips, not new scene diversity.
 Human review under the current V2 convention and an untouched whole-session
 field collection remain the next data steps. Do not manufacture training
 negatives from missing labels or mix warehouse and road class ontologies.
+
+## Export parity
+
+The [ONNX reproduction guide](onnx_export_parity_20261116.md) covers the isolated export environment and matching PyTorch/ONNX validation.
