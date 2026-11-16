@@ -21,6 +21,21 @@ def test_profiles_keep_road_and_warehouse_ontologies_separate(tmp_path):
     assert profiles['warehouse'].names[1] == 'fork_truck'
 
 
+def test_general_people_profile_selects_person_from_coco_without_inventing_rider(tmp_path):
+    profile = demo().make_profiles(tmp_path)['general']
+    demo().validate_model_names(profile,{0:'person',1:'bicycle',5:'bus'})
+    assert profile.names == {0:'person'}
+    assert profile.select_classes is True
+    with pytest.raises(ValueError,match='class names'):
+        demo().validate_model_names(profile,{0:'fork_truck',1:'bicycle'})
+
+
+def test_specialized_profiles_reject_extra_classes(tmp_path):
+    profile = demo().make_profiles(tmp_path)['reference']
+    with pytest.raises(ValueError,match='class names'):
+        demo().validate_model_names(profile,{0:'person',1:'rider',2:'bus'})
+
+
 def test_filter_uses_semantic_per_class_thresholds():
     profiles = demo().make_profiles(__import__('pathlib').Path('/unused'))
     result = demo().filter_predictions(
@@ -74,9 +89,9 @@ def server(tmp_path):
     class FakeService:
         def public_profiles(self):return [{'id':'reference','label':'Reference','available':True}]
         def predict(self,payload,profile_id):
-            if profile_id!='reference':raise ValueError('Unknown model profile')
+            if profile_id not in ('reference','general'):raise ValueError('Unknown model profile')
             return {'image':base64.b64encode(payload).decode(),'detections':[],
-                    'profile':'reference','profile_label':'Reference','elapsed_ms':1,'width':4,'height':3}
+                    'profile':profile_id,'profile_label':'Reference','elapsed_ms':1,'width':4,'height':3}
     app=demo().make_server('127.0.0.1',0,FakeService(),tmp_path)
     thread=threading.Thread(target=app.serve_forever,daemon=True);thread.start()
     yield f'http://127.0.0.1:{app.server_port}'
@@ -88,6 +103,12 @@ def test_http_image_upload_returns_inference_response(server):
                 headers={'Content-Type':'application/octet-stream'},method='POST')
     with urlopen(req,timeout=3) as response:data=json.load(response)
     assert data['profile']=='reference' and data['detections']==[]
+
+
+def test_http_defaults_to_general_person_detector(server):
+    req=Request(server+'/api/predict',data=b'image bytes',method='POST')
+    with urlopen(req,timeout=3) as response:data=json.load(response)
+    assert data['profile']=='general'
 
 
 def test_http_rejects_foreign_origin(server):

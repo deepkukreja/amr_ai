@@ -22,11 +22,14 @@ The demo processes images and frames in memory and does not write them to disk o
 
 | Selection | Classes | Confidence thresholds |
 |---|---|---|
-| People & riders · reference (default) | person, rider | 0.15, 0.25 |
+| General people · pretrained COCO (default) | person only; selected from the pretrained 80-class model | 0.25 |
+| People & riders · reference | person, rider | 0.15, 0.25 |
 | People & riders · newer candidate | person, rider | 0.19, 0.25 |
 | Warehouse objects · V6 | person, fork_truck, cart_pallet_jack, rack_shelf, misc_dynamic_feature | 0.30, 0.25, 0.35, 0.30, 0.35 |
 
-The candidate is available for comparison; the research reference remains the default. These models are specialized detectors, so arbitrary internet photos may contain objects outside their classes. Confidence scores are model outputs, not calibrated probabilities. Missed objects and false detections are possible, and this demo does not establish navigation safety.
+The general person detector is the laptop-demo default. It is an existing pretrained model, **not a newly improved custom road checkpoint**, and does not distinguish riders. The road reference remains selected for the separate road research experiment; it is available here for explicit comparison, along with the newer candidate and warehouse model. These models detect only their listed classes. Confidence scores are model outputs, not calibrated probabilities. Missed objects and false detections are possible, and this demo does not establish navigation safety.
+
+On two user-provided original images, the initial road-reference demo reproduced obvious missed people. The pretrained person model boxed all three foreground people in the first image and the main person in a derived upper-body crop where the reference failed. This is an example regression check, not a new accuracy benchmark or proof of physical webcam performance. Close-up framing and lighting can still cause misses. Compact image labels omit numerical scores and use thinner boxes; exact scores remain in the results panel.
 
 Profiles pin the existing local checkpoint paths, SHA-256 fingerprints, class metadata and validation-selected thresholds. Missing weights appear as unavailable; the demo never downloads substitute weights. Weight files and datasets are intentionally excluded from Git. Use the existing `.venv` with PyTorch, Ultralytics and Pillow; do not install these into the ROS environment just for this demo.
 

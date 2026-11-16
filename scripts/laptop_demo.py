@@ -31,12 +31,18 @@ class Profile:
     fingerprint: str
     names: dict
     thresholds: dict
+    select_classes: bool = False
 
 
 def make_profiles(root):
     road = {0:'person', 1:'rider'}
     warehouse = {0:'person', 1:'fork_truck', 2:'cart_pallet_jack', 3:'rack_shelf', 4:'misc_dynamic_feature'}
     profiles = [
+        Profile('general','General people · pretrained COCO',
+                'Pretrained person detector for webcam and general photos. Not the custom road model.',
+                root/'weights/yolo26s.pt',
+                '646f8bc3fe0a656803d95c294f7852321748cb29d13466a1af8862e2db384a1b',
+                {0:'person'}, {'person':.25}, select_classes=True),
         Profile('reference','People & riders · reference','The retained road-scene reference detector.',
                 root/'runs/experiments/indian_road_manual280_lowlr_v1/weights/best.pt',
                 '6372ac75302d49ee3df87e8b65ce6f71ca5b2d8bef6281da811299ac67b53e0c', road,
@@ -51,6 +57,12 @@ def make_profiles(root):
                 {'person':.30,'fork_truck':.25,'cart_pallet_jack':.35,'rack_shelf':.30,'misc_dynamic_feature':.35}),
     ]
     return {p.id:p for p in profiles}
+
+
+def validate_model_names(profile,names):
+    selected = {key:names.get(key) for key in profile.names}
+    if selected != profile.names or (not profile.select_classes and names != profile.names):
+        raise ValueError('Model class names differ from the selected profile.')
 
 
 def check_checkpoint(profile):
@@ -162,18 +174,20 @@ class InferenceService:
         if profile_id not in self.models:
             check_checkpoint(profile)
             model = YOLO(str(profile.checkpoint))
-            if model.names != profile.names:
-                raise ValueError('Model class names differ from the selected profile.')
+            validate_model_names(profile,model.names)
             self.models[profile_id] = model
         result = self.models[profile_id].predict(source=image,imgsz=960,
                     conf=min(profile.thresholds.values()),iou=.7,nms=True,
+                    classes=list(profile.names) if profile.select_classes else None,
                     max_det=300,device=0 if torch.cuda.is_available() else 'cpu',
                     quantize=None,augment=False,save=False,verbose=False)[0]
         boxes = result.boxes.cpu()
         detections = filter_predictions(boxes.xyxy.tolist(),boxes.cls.tolist(),boxes.conf.tolist(),profile)
         indices = [d.pop('index') for d in detections]
         result.boxes = result.boxes[indices]
-        painted = result.plot(labels=True,conf=True)
+        # Small originals are enlarged in the browser: avoid magnified thick
+        # boxes and long score labels. Exact scores remain in the inspector.
+        painted = result.plot(labels=True,conf=False,line_width=1)
         stream = io.BytesIO()
         Image.fromarray(painted[:,:,::-1]).save(stream,format='JPEG',quality=86)
         return {'image':base64.b64encode(stream.getvalue()).decode(),
@@ -225,7 +239,7 @@ def make_server(host,port,service,assets,sample=None):
                 if length>MAX_BYTES:
                     self.send(413,{'error':'Use an image smaller than 12 MB.'});return
                 parsed=urlsplit(self.path)
-                profile_id=parse_qs(parsed.query).get('model',['reference'])[0]
+                profile_id=parse_qs(parsed.query).get('model',['general'])[0]
                 if parsed.path=='/api/sample':
                     if sample is None or not Path(sample).is_file():
                         raise FileNotFoundError('Sample image is not available.')

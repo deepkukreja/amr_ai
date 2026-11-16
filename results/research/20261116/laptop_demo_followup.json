@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-16",
+  "problem": "Road-model missed foreground/partial-body people; default plotting magnified labels on small originals.",
+  "change": "Use existing pretrained COCO person-only profile by default in laptop demo; retain research checkpoints; compact labels and thinner boxes.",
+  "new_training_performed": false,
+  "new_default_sha256": "646f8bc3fe0a656803d95c294f7852321748cb29d13466a1af8862e2db384a1b",
+  "example_scope": "Two user-provided originals and derived upper-body crops, not a generalization or safety benchmark.",
+  "three_foreground_people": {
+    "reference_at_015": 1,
+    "general_at_025": 3,
+    "matching": "Visual check and IoU > 0.5 against three coarse foreground boxes."
+  },
+  "partial_body_example": {
+    "reference_main_person_detected": false,
+    "general_main_person_detected": true
+  },
+  "source_tests_passed": 112,
+  "browser_checks": {
+    "initial_camera_off": true,
+    "real_sample_reference": {
+      "detections": 6,
+      "latency": "119 ms"
+    },
+    "real_image_upload_candidate": true,
+    "real_warehouse_inference": true,
+    "real_public_image_url": true,
+    "general_person_only_on_original_photo": {
+      "foreground_people_boxed": 3,
+      "all_detections": 10
+    },
+    "general_partial_body_detected": true,
+    "general_second_original": {
+      "detections": 4
+    },
+    "synthetic_camera_permission_denied": true,
+    "synthetic_camera_frames_and_stop_tracks": true,
+    "mobile_no_horizontal_overflow": true
+  },
+  "browser_console_errors": [],
+  "real_camera_accessed": false,
+  "private_artifacts": "Original images, derived crops, predictions and screenshots remain local and outside Git."
+}

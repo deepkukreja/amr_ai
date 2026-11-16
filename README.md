@@ -12,7 +12,7 @@ This repository contains code, dataset configuration files, image-list manifests
 
 ## Try the models from your laptop
 
-Run `.venv/bin/python scripts/laptop_demo.py` in the local WSL checkout, then open **http://localhost:8877** in Windows Edge or Chrome. Upload an image, paste a direct public image URL, or click **Start webcam**. Select the retained road reference, newer candidate or warehouse detector. See the [laptop demo guide](docs/laptop_demo.md) for setup, model classes and limitations.
+Run `.venv/bin/python scripts/laptop_demo.py` in the local WSL checkout, then open **http://localhost:8877** in Windows Edge or Chrome. Upload an image, paste a direct public image URL, or click **Start webcam**. The default is the existing pretrained COCO person detector for general webcam/photos. The custom road reference, newer candidate and warehouse detector remain available for explicit comparison. See the [laptop demo guide](docs/laptop_demo.md) for setup, model classes and limitations.
 
 ## Start here
 
