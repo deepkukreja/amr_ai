@@ -1,0 +1,31 @@
+{
+  "environment": {
+    "url": "http://localhost:8877",
+    "browser": "Edge / regular Playwright",
+    "browser_plugin": "Not available; Playwright MCP navigation returned ERR_BLOCKED_BY_CLIENT. Existing local Playwright used.",
+    "real_camera_accessed": false
+  },
+  "checks": {
+    "initial_camera_off": true,
+    "real_sample_reference": {
+      "detections": 6,
+      "latency": "1149 ms"
+    },
+    "real_image_upload_candidate": true,
+    "real_warehouse_inference": true,
+    "real_public_image_url": true,
+    "synthetic_camera_permission_denied": true,
+    "synthetic_camera_frames_and_stop_tracks": true,
+    "mobile_no_horizontal_overflow": true
+  },
+  "console_errors": [],
+  "verified_date": "2026-11-16",
+  "source_suite": {
+    "command": "python3 -m pytest -q tests",
+    "passed": 109
+  },
+  "scope": "Local browser vision demo; no robot motion or physical webcam access during automated checks.",
+  "image_upload_scope": "UI upload path exercised with a generated annotated sample; not an accuracy benchmark.",
+  "public_image_url": "https://raw.githubusercontent.com/ultralytics/assets/main/im/bus.jpg",
+  "artifacts": "Desktop/mobile screenshots and full local server log remain local."
+}

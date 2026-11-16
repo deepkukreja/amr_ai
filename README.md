@@ -10,6 +10,10 @@ The local continuation, fresh COCO-initialized comparison and validation-only th
 
 This repository contains code, dataset configuration files, image-list manifests, experiment notes, evaluation outputs, and ROS 2/project tooling. Large image datasets, many annotations, trained weights, and generated training runs stay outside ordinary Git history so that the source repository remains manageable.
 
+## Try the models from your laptop
+
+Run `.venv/bin/python scripts/laptop_demo.py` in the local WSL checkout, then open **http://localhost:8877** in Windows Edge or Chrome. Upload an image, paste a direct public image URL, or click **Start webcam**. Select the retained road reference, newer candidate or warehouse detector. See the [laptop demo guide](docs/laptop_demo.md) for setup, model classes and limitations.
+
 ## Start here
 
 - **[Dataset guide](datasets/README.md):** what the dataset folders mean, which files are tracked, how to prepare local data, and important class/split cautions.
