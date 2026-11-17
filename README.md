@@ -1,5 +1,9 @@
 # AMR AI — Perception Research for an Autonomous Mobile Robot
 
+## Latest verified research — 17 November 2026
+
+The [human-localization audit and paired crop-replay experiment](docs/human_detection_followup.md) exposed narrow close-up coverage. Both 12-epoch continuations completed; crop replay recovered the supplied full-body example but reduced road-validation and development performance, so the existing reference and general-webcam default are retained. Raw data and experimental weights stay local.
+
 ## Latest verified research — 16 November 2026
 
 The local continuation, fresh COCO-initialized comparison and validation-only threshold study are recorded in the [research summary](results/research/20261116/summary.json) and [reproduction guide](docs/research_reproduction.md). The calibrated candidate has higher measured recall with more false positives and effectively tied aggregate development F1; the existing reference remains selected. Raw data, weights and full evidence stay local.

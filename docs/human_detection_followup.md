@@ -41,9 +41,27 @@ The source input pairs and generated crop/label hashes are checked before each r
 
 Existing validation fitness selects each arm's `best.pt`. Compare the resulting checkpoints on the frozen development protocol and the user-supplied diagnostic examples, with no threshold search. Those examples are development probes, not untouched tests. Keep the reference and general-demo defaults unless the evidence supports a scoped change.
 
+## Completed experiment and decision
+
+The smoke epoch and both 12-epoch arms completed. Fresh FP32 validation uses batch 2 for all three checkpoints below. Development F1 uses the original fixed person/rider thresholds 0.15/0.25; diagnostic probes use the existing candidate thresholds 0.19/0.25. The starting candidate's earlier development TP/FP/FN counts reproduced exactly.
+
+| Checkpoint | Validation mAP50–95 | Development two-class F1 | Foreground person matches | Upper-body person match |
+|---|---:|---:|---:|---:|
+| Starting road candidate | 21.90% | 51.02% | 1 / 3 | 0 / 1 |
+| Unchanged-data continuation | 20.26% | 50.28% | 1 / 3 | 0 / 1 |
+| Crop-replay continuation | 19.87% | 49.79% | 3 / 3 | 0 / 1 |
+
+The probe matches use coarse, selected foreground boxes at IoU 0.50. They are localized diagnostics, not full-image precision estimates. The control also localized one target with the wrong rider class, which is deliberately excluded from its person-match count. All diagnostic image files and target coordinates remain local.
+
+Crop replay recovered the supplied full-body example but reduced road-validation mAP and aggregate development F1. It did not recover the upper-body probe. The human-localization-only F1 also fell slightly (53.04% starting candidate, 53.00% control, 52.85% replay at common confidence 0.25), with increased recall and false positives.
+
+**Decision: retain the current road reference and the pretrained COCO laptop-demo default.** Preserve the experimental weights for research; do not treat the replay arm as a deployment upgrade. The next data work should add separately reviewed near/partial-body examples and scene diversity with session/clip-separated validation. The existing 25 webcam images and 120 pending road frames remain unreviewed and are not training ground truth. Further duplication of the same small road collection does not supply those missing conditions.
+
+The repeated ROS setup failure was outside the model tests: setup-ros constructs its package URL from an unauthenticated latest-release query. CI now preinstalls the verified ROS APT source package 1.3.0, the same version seen in the earlier successful job, and checks its published SHA-256. This removes that lookup while retaining the existing ROS setup action. The [official release](https://github.com/ros-infrastructure/ros-apt-source/releases/tag/1.3.0) and [setup action implementation](https://github.com/ros-tooling/setup-ros/blob/v0.7/src/setup-ros-ubuntu.ts) describe the package and detection path. The updated workflow passed the ROS build and live integration test.
+
 ## Reproduction
 
-In the existing inference/training virtual environment, with local data and weights present:
+In the existing inference/training virtual environment, with local data, weights, the prior development comparison cache, and `results/local/model_training_20261115/inventory_and_data_audit.json` present:
 
 ```bash
 python3 -m pytest -q tests
@@ -55,6 +73,16 @@ python3 -m pytest -q tests
 .venv/bin/python -m scripts.training.train_zoom_replay --stage smoke
 .venv/bin/python -m scripts.training.train_zoom_replay --stage control
 .venv/bin/python -m scripts.training.train_zoom_replay --stage replay
+.venv/bin/python -m scripts.evaluation.evaluate_zoom_replay \
+  --output results/local/zoom_evaluation_20261117
+.venv/bin/python -m scripts.evaluation.compare_human_detection \
+  --output results/local/zoom_human_detection_20261117 \
+  --audit-cache results/local/model_clean_baseline_20261115/development_comparison.json \
+  --extra-checkpoint control=runs/experiments/indian_manual280_zoom_control_20261117/weights/best.pt \
+  --extra-checkpoint replay=runs/experiments/indian_manual280_zoom_replay_20261117/weights/best.pt \
+  --models control replay
 ```
 
 Existing output directories are refused. Raw images, derived crops, annotations, weights, training logs and full per-image predictions remain local. Source imagery and reviewed road annotations retain the provenance described in the [research reproduction guide](research_reproduction.md). Public aggregate evidence is in [the dated summary](../results/research/20261117/human_detection.json).
+
+The optional `--probe-dir` for `evaluate_zoom_replay` accepts PNG images and a local `targets.json` mapping each image stem to normalized XYXY person boxes. Probe coordinates and images are not bundled in Git. The measured paired outcome and checkpoint hashes are recorded in [the experiment result](../results/research/20261117/zoom_replay.json).

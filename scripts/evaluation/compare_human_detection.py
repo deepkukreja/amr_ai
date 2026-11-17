@@ -71,13 +71,34 @@ def _metrics(counts):
             'recall':tp/(tp+fn) if tp+fn else 0,'f1':2*tp/(2*tp+fp+fn) if 2*tp+fp+fn else 0}
 
 
+def comparison_profiles(root,extras):
+    from dataclasses import replace
+    from scripts.laptop_demo import make_profiles
+    base=make_profiles(root)
+    profiles={key:base[key] for key in ('general','reference','candidate')}
+    for value in extras:
+        name,separator,path=value.partition('=')
+        if not separator or not name.isidentifier() or name in profiles:
+            raise ValueError('Extra checkpoint name must be unique: NAME=PATH')
+        checkpoint=(root/Path(path)).resolve()
+        profiles[name]=replace(base['candidate'],id=name,checkpoint=checkpoint,
+            fingerprint=hashlib.sha256(checkpoint.read_bytes()).hexdigest())
+    return profiles
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,default=Path(__file__).resolve().parents[2])
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--audit-cache',type=Path,help='Verify every input against a previous hashed comparison')
+    parser.add_argument('--extra-checkpoint',action='append',default=[],metavar='NAME=PATH',
+                        help='Add a strict person/rider checkpoint with the existing candidate thresholds')
+    parser.add_argument('--models',nargs='+',default=['general','reference','candidate'])
     args=parser.parse_args()
     root=args.root.resolve();out=args.output.resolve()
+    profiles=comparison_profiles(root,args.extra_checkpoint)
+    if len(set(args.models))!=len(args.models) or any(key not in profiles for key in args.models):
+        raise ValueError('Choose unique known model names')
     if out.exists() and any(out.iterdir()):raise ValueError('Refuse a nonempty output directory')
     out.mkdir(parents=True,exist_ok=True)
     digest=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest()
@@ -106,7 +127,7 @@ def main():
     import ultralytics
     from ultralytics import YOLO
     from ultralytics.utils import SETTINGS
-    from scripts.laptop_demo import make_profiles,check_checkpoint,validate_model_names
+    from scripts.laptop_demo import check_checkpoint,validate_model_names
     dict.update(SETTINGS,{k:False for k in ('hub','sync','wandb','mlflow','comet','clearml','neptune') if k in SETTINGS})
     dict.update(SETTINGS,{'api_key':''});torch.set_num_threads(2)
     report={'created_utc':datetime.now(timezone.utc).isoformat(),'script_sha256':digest(__file__),'source_revision':subprocess.check_output(
@@ -123,8 +144,8 @@ def main():
         'data':{'images':len(inputs),'objects':sum(len(v['truth']) for v in inputs.values()),
             'manifest_sha256':digest(manifest),'previous_input_hashes_verified':bool(args.audit_cache)},'models':{}}
     (out/'protocol.json').write_text(json.dumps(report,indent=2)+'\n')
-    for key in ('general','reference','candidate'):
-        profile=make_profiles(root)[key];check_checkpoint(profile)
+    for key in args.models:
+        profile=profiles[key];check_checkpoint(profile)
         model=YOLO(str(profile.checkpoint));validate_model_names(profile,model.names)
         totals={mode:{'tp':0,'fp':0,'fn':0} for mode in ('common_025','profile_thresholds')}
         groups={mode:defaultdict(lambda:{'matched':0,'objects':0}) for mode in totals}

@@ -1,0 +1,794 @@
+{
+  "source_revision": "a2f1990a3a4462a5203b9cc985ff9ebf9463dd60",
+  "script_sha256": "514c53ee8358d9ac8b1ac7963a974dfe669014f2cc01f062b0ce7c57a4ad0031",
+  "scope": "Repeatedly used development and user diagnostic probes; no independent final test.",
+  "development_images": 166,
+  "development_input_hashes_verified": true,
+  "protocol": {
+    "imgsz": 960,
+    "nms_iou": 0.7,
+    "matching_iou": 0.5,
+    "FP32": true,
+    "nms": true,
+    "augment": false,
+    "fixed_thresholds": {
+      "person": 0.15,
+      "rider": 0.25
+    },
+    "candidate_thresholds": {
+      "person": 0.19,
+      "rider": 0.25
+    }
+  },
+  "prior_candidate_counts_reproduced": true,
+  "source_tests_passed": 135,
+  "models": {
+    "candidate": {
+      "checkpoint_sha256": "2f160e4b51e918d99cd009940bcc6c99e2fc394ff86dc29ebbb60a27359ec7f1",
+      "development": {
+        "fixed_thresholds": {
+          "all": {
+            "tp": 175,
+            "fp": 165,
+            "fn": 171,
+            "precision": 0.5147058823529411,
+            "recall": 0.5057803468208093,
+            "f1": 0.5102040816326531
+          },
+          "person": {
+            "tp": 98,
+            "fp": 103,
+            "fn": 79,
+            "precision": 0.48756218905472637,
+            "recall": 0.5536723163841808,
+            "f1": 0.5185185185185185
+          },
+          "rider": {
+            "tp": 77,
+            "fp": 62,
+            "fn": 92,
+            "precision": 0.5539568345323741,
+            "recall": 0.4556213017751479,
+            "f1": 0.5
+          }
+        },
+        "candidate_thresholds": {
+          "all": {
+            "tp": 170,
+            "fp": 148,
+            "fn": 176,
+            "precision": 0.5345911949685535,
+            "recall": 0.4913294797687861,
+            "f1": 0.5120481927710844
+          },
+          "person": {
+            "tp": 93,
+            "fp": 86,
+            "fn": 84,
+            "precision": 0.5195530726256983,
+            "recall": 0.5254237288135594,
+            "f1": 0.5224719101123596
+          },
+          "rider": {
+            "tp": 77,
+            "fp": 62,
+            "fn": 92,
+            "precision": 0.5539568345323741,
+            "recall": 0.4556213017751479,
+            "f1": 0.5
+          }
+        }
+      },
+      "validation": {
+        "metrics/precision(B)": 0.7595235087003767,
+        "metrics/recall(B)": 0.5686063218390804,
+        "metrics/mAP50(B)": 0.6333866111966419,
+        "metrics/mAP50-95(B)": 0.21903698778953756,
+        "fitness": 0.21903698778953756
+      },
+      "probes": {
+        "three_women": {
+          "target_people": 3,
+          "person_matches": 1,
+          "human_matches": 1,
+          "scope": "Only selected foreground targets annotated; no full-image precision claim."
+        },
+        "single_upper_body": {
+          "target_people": 1,
+          "person_matches": 0,
+          "human_matches": 0,
+          "scope": "Only selected foreground targets annotated; no full-image precision claim."
+        }
+      }
+    },
+    "control": {
+      "checkpoint_sha256": "62b8012cd9a988c4bdef0515aaff49bf7fc31b8fca74c5f81154f389316cc15d",
+      "development": {
+        "fixed_thresholds": {
+          "all": {
+            "tp": 177,
+            "fp": 181,
+            "fn": 169,
+            "precision": 0.49441340782122906,
+            "recall": 0.5115606936416185,
+            "f1": 0.5028409090909091
+          },
+          "person": {
+            "tp": 96,
+            "fp": 99,
+            "fn": 81,
+            "precision": 0.49230769230769234,
+            "recall": 0.5423728813559322,
+            "f1": 0.5161290322580645
+          },
+          "rider": {
+            "tp": 81,
+            "fp": 82,
+            "fn": 88,
+            "precision": 0.49693251533742333,
+            "recall": 0.47928994082840237,
+            "f1": 0.4879518072289157
+          }
+        },
+        "candidate_thresholds": {
+          "all": {
+            "tp": 173,
+            "fp": 160,
+            "fn": 173,
+            "precision": 0.5195195195195195,
+            "recall": 0.5,
+            "f1": 0.5095729013254786
+          },
+          "person": {
+            "tp": 92,
+            "fp": 78,
+            "fn": 85,
+            "precision": 0.5411764705882353,
+            "recall": 0.519774011299435,
+            "f1": 0.5302593659942363
+          },
+          "rider": {
+            "tp": 81,
+            "fp": 82,
+            "fn": 88,
+            "precision": 0.49693251533742333,
+            "recall": 0.47928994082840237,
+            "f1": 0.4879518072289157
+          }
+        }
+      },
+      "validation": {
+        "metrics/precision(B)": 0.7064609807088846,
+        "metrics/recall(B)": 0.49055235375195794,
+        "metrics/mAP50(B)": 0.567419536528906,
+        "metrics/mAP50-95(B)": 0.20263440793323367,
+        "fitness": 0.20263440793323367
+      },
+      "probes": {
+        "three_women": {
+          "target_people": 3,
+          "person_matches": 1,
+          "human_matches": 2,
+          "scope": "Only selected foreground targets annotated; no full-image precision claim."
+        },
+        "single_upper_body": {
+          "target_people": 1,
+          "person_matches": 0,
+          "human_matches": 0,
+          "scope": "Only selected foreground targets annotated; no full-image precision claim."
+        }
+      },
+      "human_localization": {
+        "common_025": {
+          "tp": 172,
+          "fp": 131,
+          "fn": 174,
+          "precision": 0.5676567656765676,
+          "recall": 0.49710982658959535,
+          "f1": 0.5300462249614792,
+          "recall_by_groundtruth_group": {
+            "class:rider": {
+              "matched": 84,
+              "objects": 169,
+              "recall": 0.4970414201183432
+            },
+            "size:small": {
+              "matched": 152,
+              "objects": 318,
+              "recall": 0.4779874213836478
+            },
+            "timeofday:dusk": {
+              "matched": 28,
+              "objects": 58,
+              "recall": 0.4827586206896552
+            },
+            "weather:clear": {
+              "matched": 153,
+              "objects": 312,
+              "recall": 0.49038461538461536
+            },
+            "class:person": {
+              "matched": 88,
+              "objects": 177,
+              "recall": 0.4971751412429379
+            },
+            "timeofday:night": {
+              "matched": 29,
+              "objects": 70,
+              "recall": 0.4142857142857143
+            },
+            "weather:foggy": {
+              "matched": 6,
+              "objects": 11,
+              "recall": 0.5454545454545454
+            },
+            "timeofday:daytime": {
+              "matched": 115,
+              "objects": 218,
+              "recall": 0.5275229357798165
+            },
+            "size:medium": {
+              "matched": 20,
+              "objects": 28,
+              "recall": 0.7142857142857143
+            },
+            "weather:rainy": {
+              "matched": 6,
+              "objects": 14,
+              "recall": 0.42857142857142855
+            },
+            "weather:overcast": {
+              "matched": 7,
+              "objects": 9,
+              "recall": 0.7777777777777778
+            }
+          }
+        },
+        "profile_thresholds": {
+          "tp": 179,
+          "fp": 154,
+          "fn": 167,
+          "precision": 0.5375375375375375,
+          "recall": 0.5173410404624278,
+          "f1": 0.5272459499263623,
+          "recall_by_groundtruth_group": {
+            "class:rider": {
+              "matched": 84,
+              "objects": 169,
+              "recall": 0.4970414201183432
+            },
+            "size:small": {
+              "matched": 159,
+              "objects": 318,
+              "recall": 0.5
+            },
+            "timeofday:dusk": {
+              "matched": 31,
+              "objects": 58,
+              "recall": 0.5344827586206896
+            },
+            "weather:clear": {
+              "matched": 160,
+              "objects": 312,
+              "recall": 0.5128205128205128
+            },
+            "class:person": {
+              "matched": 95,
+              "objects": 177,
+              "recall": 0.536723163841808
+            },
+            "timeofday:night": {
+              "matched": 30,
+              "objects": 70,
+              "recall": 0.42857142857142855
+            },
+            "weather:foggy": {
+              "matched": 6,
+              "objects": 11,
+              "recall": 0.5454545454545454
+            },
+            "timeofday:daytime": {
+              "matched": 118,
+              "objects": 218,
+              "recall": 0.5412844036697247
+            },
+            "size:medium": {
+              "matched": 20,
+              "objects": 28,
+              "recall": 0.7142857142857143
+            },
+            "weather:rainy": {
+              "matched": 6,
+              "objects": 14,
+              "recall": 0.42857142857142855
+            },
+            "weather:overcast": {
+              "matched": 7,
+              "objects": 9,
+              "recall": 0.7777777777777778
+            }
+          }
+        }
+      }
+    },
+    "replay": {
+      "checkpoint_sha256": "c8635852a0c0b84199dc278b437a054d1477c66044421e07cd6d6ec14155e75c",
+      "development": {
+        "fixed_thresholds": {
+          "all": {
+            "tp": 177,
+            "fp": 188,
+            "fn": 169,
+            "precision": 0.4849315068493151,
+            "recall": 0.5115606936416185,
+            "f1": 0.4978902953586498
+          },
+          "person": {
+            "tp": 94,
+            "fp": 107,
+            "fn": 83,
+            "precision": 0.46766169154228854,
+            "recall": 0.5310734463276836,
+            "f1": 0.4973544973544973
+          },
+          "rider": {
+            "tp": 83,
+            "fp": 81,
+            "fn": 86,
+            "precision": 0.5060975609756098,
+            "recall": 0.4911242603550296,
+            "f1": 0.4984984984984985
+          }
+        },
+        "candidate_thresholds": {
+          "all": {
+            "tp": 171,
+            "fp": 163,
+            "fn": 175,
+            "precision": 0.5119760479041916,
+            "recall": 0.49421965317919075,
+            "f1": 0.5029411764705882
+          },
+          "person": {
+            "tp": 88,
+            "fp": 82,
+            "fn": 89,
+            "precision": 0.5176470588235295,
+            "recall": 0.4971751412429379,
+            "f1": 0.5072046109510087
+          },
+          "rider": {
+            "tp": 83,
+            "fp": 81,
+            "fn": 86,
+            "precision": 0.5060975609756098,
+            "recall": 0.4911242603550296,
+            "f1": 0.4984984984984985
+          }
+        }
+      },
+      "validation": {
+        "metrics/precision(B)": 0.7454294756700132,
+        "metrics/recall(B)": 0.48441689523912945,
+        "metrics/mAP50(B)": 0.5547880010075501,
+        "metrics/mAP50-95(B)": 0.19869839242123222,
+        "fitness": 0.19869839242123222
+      },
+      "probes": {
+        "three_women": {
+          "target_people": 3,
+          "person_matches": 3,
+          "human_matches": 3,
+          "scope": "Only selected foreground targets annotated; no full-image precision claim."
+        },
+        "single_upper_body": {
+          "target_people": 1,
+          "person_matches": 0,
+          "human_matches": 0,
+          "scope": "Only selected foreground targets annotated; no full-image precision claim."
+        }
+      },
+      "human_localization": {
+        "common_025": {
+          "tp": 176,
+          "fp": 144,
+          "fn": 170,
+          "precision": 0.55,
+          "recall": 0.5086705202312138,
+          "f1": 0.5285285285285285,
+          "recall_by_groundtruth_group": {
+            "class:rider": {
+              "matched": 86,
+              "objects": 169,
+              "recall": 0.5088757396449705
+            },
+            "size:small": {
+              "matched": 157,
+              "objects": 318,
+              "recall": 0.4937106918238994
+            },
+            "timeofday:dusk": {
+              "matched": 33,
+              "objects": 58,
+              "recall": 0.5689655172413793
+            },
+            "weather:clear": {
+              "matched": 156,
+              "objects": 312,
+              "recall": 0.5
+            },
+            "class:person": {
+              "matched": 90,
+              "objects": 177,
+              "recall": 0.5084745762711864
+            },
+            "timeofday:night": {
+              "matched": 30,
+              "objects": 70,
+              "recall": 0.42857142857142855
+            },
+            "weather:foggy": {
+              "matched": 6,
+              "objects": 11,
+              "recall": 0.5454545454545454
+            },
+            "timeofday:daytime": {
+              "matched": 113,
+              "objects": 218,
+              "recall": 0.518348623853211
+            },
+            "size:medium": {
+              "matched": 19,
+              "objects": 28,
+              "recall": 0.6785714285714286
+            },
+            "weather:rainy": {
+              "matched": 7,
+              "objects": 14,
+              "recall": 0.5
+            },
+            "weather:overcast": {
+              "matched": 7,
+              "objects": 9,
+              "recall": 0.7777777777777778
+            }
+          }
+        },
+        "profile_thresholds": {
+          "tp": 179,
+          "fp": 155,
+          "fn": 167,
+          "precision": 0.5359281437125748,
+          "recall": 0.5173410404624278,
+          "f1": 0.5264705882352941,
+          "recall_by_groundtruth_group": {
+            "class:rider": {
+              "matched": 87,
+              "objects": 169,
+              "recall": 0.514792899408284
+            },
+            "size:small": {
+              "matched": 160,
+              "objects": 318,
+              "recall": 0.5031446540880503
+            },
+            "timeofday:dusk": {
+              "matched": 33,
+              "objects": 58,
+              "recall": 0.5689655172413793
+            },
+            "weather:clear": {
+              "matched": 158,
+              "objects": 312,
+              "recall": 0.5064102564102564
+            },
+            "class:person": {
+              "matched": 92,
+              "objects": 177,
+              "recall": 0.519774011299435
+            },
+            "timeofday:night": {
+              "matched": 31,
+              "objects": 70,
+              "recall": 0.44285714285714284
+            },
+            "weather:foggy": {
+              "matched": 7,
+              "objects": 11,
+              "recall": 0.6363636363636364
+            },
+            "timeofday:daytime": {
+              "matched": 115,
+              "objects": 218,
+              "recall": 0.5275229357798165
+            },
+            "size:medium": {
+              "matched": 19,
+              "objects": 28,
+              "recall": 0.6785714285714286
+            },
+            "weather:rainy": {
+              "matched": 7,
+              "objects": 14,
+              "recall": 0.5
+            },
+            "weather:overcast": {
+              "matched": 7,
+              "objects": 9,
+              "recall": 0.7777777777777778
+            }
+          }
+        }
+      }
+    }
+  },
+  "training": {
+    "smoke": {
+      "completion": {
+        "stage": "smoke",
+        "run": "runs/experiments/indian_manual280_zoom_smoke_20261117",
+        "best_sha256": "820da8075a830758367fed4db179b6a22f23725f4fdd9c560af1a5e70b59276b",
+        "initialization_unchanged": true,
+        "arguments": {
+          "data": "datasets/indian_manual280_zoom_replay_20261117/data.yaml",
+          "epochs": 1,
+          "patience": 12,
+          "imgsz": 960,
+          "batch": 2,
+          "device": 0,
+          "workers": 2,
+          "optimizer": "AdamW",
+          "lr0": 0.0001,
+          "lrf": 0.1,
+          "warmup_epochs": 1,
+          "warmup_bias_lr": 0.0001,
+          "cos_lr": true,
+          "freeze": 10,
+          "cls_remap": true,
+          "seed": 20261117,
+          "deterministic": true,
+          "amp": true,
+          "cache": false,
+          "close_mosaic": 0,
+          "nms": true,
+          "resume": false,
+          "pretrained": true,
+          "project": "runs/experiments",
+          "name": "indian_manual280_zoom_smoke_20261117",
+          "exist_ok": false,
+          "plots": true
+        }
+      },
+      "protocol": {
+        "stage": "smoke",
+        "script_sha256": "4f2c3fd5d85594bb9ff1048f6d6014e7cc9685d0df69a20df34a203a752cca86",
+        "source_revision": "3226bf77b9e17ba21484aca4d739f2b14f79da0a",
+        "initialization_sha256": "2f160e4b51e918d99cd009940bcc6c99e2fc394ff86dc29ebbb60a27359ec7f1",
+        "augmentation_manifest_sha256": "55b85e207ce2c6a94303ae59356e581d1f29d7baf0b400afbdbcec31a7387b02",
+        "source_input_pairs_rechecked": 280,
+        "augmented_input_pairs_rechecked": 48,
+        "python": "3.12.3",
+        "torch": "2.11.0+cu128",
+        "ultralytics": "8.4.156",
+        "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+        "arguments": {
+          "data": "datasets/indian_manual280_zoom_replay_20261117/data.yaml",
+          "epochs": 1,
+          "patience": 12,
+          "imgsz": 960,
+          "batch": 2,
+          "device": 0,
+          "workers": 2,
+          "optimizer": "AdamW",
+          "lr0": 0.0001,
+          "lrf": 0.1,
+          "warmup_epochs": 1,
+          "warmup_bias_lr": 0.0001,
+          "cos_lr": true,
+          "freeze": 10,
+          "cls_remap": true,
+          "seed": 20261117,
+          "deterministic": true,
+          "amp": true,
+          "cache": false,
+          "close_mosaic": 0,
+          "nms": true,
+          "resume": false,
+          "pretrained": true,
+          "project": "runs/experiments",
+          "name": "indian_manual280_zoom_smoke_20261117",
+          "exist_ok": false,
+          "plots": true
+        },
+        "comparison_scope": "Same initialization, seed and nominal epochs; replay has 48 additional geometric views and therefore more optimizer batches.",
+        "validation_selection": "Existing 59-image validation fitness selects best.pt; no new untouched final test exists."
+      },
+      "epochs_completed": 1
+    },
+    "control": {
+      "completion": {
+        "stage": "control",
+        "run": "runs/experiments/indian_manual280_zoom_control_20261117",
+        "best_sha256": "62b8012cd9a988c4bdef0515aaff49bf7fc31b8fca74c5f81154f389316cc15d",
+        "initialization_unchanged": true,
+        "arguments": {
+          "data": "datasets/indian_road_manual280_clean_v1/data.yaml",
+          "epochs": 12,
+          "patience": 12,
+          "imgsz": 960,
+          "batch": 2,
+          "device": 0,
+          "workers": 2,
+          "optimizer": "AdamW",
+          "lr0": 0.0001,
+          "lrf": 0.1,
+          "warmup_epochs": 1,
+          "warmup_bias_lr": 0.0001,
+          "cos_lr": true,
+          "freeze": 10,
+          "cls_remap": true,
+          "seed": 20261117,
+          "deterministic": true,
+          "amp": true,
+          "cache": false,
+          "close_mosaic": 3,
+          "nms": true,
+          "resume": false,
+          "pretrained": true,
+          "project": "runs/experiments",
+          "name": "indian_manual280_zoom_control_20261117",
+          "exist_ok": false,
+          "plots": true
+        }
+      },
+      "protocol": {
+        "stage": "control",
+        "script_sha256": "4f2c3fd5d85594bb9ff1048f6d6014e7cc9685d0df69a20df34a203a752cca86",
+        "source_revision": "7e2623daf38ced150257841002538278f7526b01",
+        "initialization_sha256": "2f160e4b51e918d99cd009940bcc6c99e2fc394ff86dc29ebbb60a27359ec7f1",
+        "augmentation_manifest_sha256": "55b85e207ce2c6a94303ae59356e581d1f29d7baf0b400afbdbcec31a7387b02",
+        "source_input_pairs_rechecked": 280,
+        "augmented_input_pairs_rechecked": 48,
+        "python": "3.12.3",
+        "torch": "2.11.0+cu128",
+        "ultralytics": "8.4.156",
+        "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+        "arguments": {
+          "data": "datasets/indian_road_manual280_clean_v1/data.yaml",
+          "epochs": 12,
+          "patience": 12,
+          "imgsz": 960,
+          "batch": 2,
+          "device": 0,
+          "workers": 2,
+          "optimizer": "AdamW",
+          "lr0": 0.0001,
+          "lrf": 0.1,
+          "warmup_epochs": 1,
+          "warmup_bias_lr": 0.0001,
+          "cos_lr": true,
+          "freeze": 10,
+          "cls_remap": true,
+          "seed": 20261117,
+          "deterministic": true,
+          "amp": true,
+          "cache": false,
+          "close_mosaic": 3,
+          "nms": true,
+          "resume": false,
+          "pretrained": true,
+          "project": "runs/experiments",
+          "name": "indian_manual280_zoom_control_20261117",
+          "exist_ok": false,
+          "plots": true
+        },
+        "comparison_scope": "Same initialization, seed and nominal epochs; replay has 48 additional geometric views and therefore more optimizer batches.",
+        "validation_selection": "Existing 59-image validation fitness selects best.pt; no new untouched final test exists."
+      },
+      "epochs_completed": 12
+    },
+    "replay": {
+      "completion": {
+        "stage": "replay",
+        "run": "runs/experiments/indian_manual280_zoom_replay_20261117",
+        "best_sha256": "c8635852a0c0b84199dc278b437a054d1477c66044421e07cd6d6ec14155e75c",
+        "initialization_unchanged": true,
+        "arguments": {
+          "data": "datasets/indian_manual280_zoom_replay_20261117/data.yaml",
+          "epochs": 12,
+          "patience": 12,
+          "imgsz": 960,
+          "batch": 2,
+          "device": 0,
+          "workers": 2,
+          "optimizer": "AdamW",
+          "lr0": 0.0001,
+          "lrf": 0.1,
+          "warmup_epochs": 1,
+          "warmup_bias_lr": 0.0001,
+          "cos_lr": true,
+          "freeze": 10,
+          "cls_remap": true,
+          "seed": 20261117,
+          "deterministic": true,
+          "amp": true,
+          "cache": false,
+          "close_mosaic": 3,
+          "nms": true,
+          "resume": false,
+          "pretrained": true,
+          "project": "runs/experiments",
+          "name": "indian_manual280_zoom_replay_20261117",
+          "exist_ok": false,
+          "plots": true
+        }
+      },
+      "protocol": {
+        "stage": "replay",
+        "script_sha256": "4f2c3fd5d85594bb9ff1048f6d6014e7cc9685d0df69a20df34a203a752cca86",
+        "source_revision": "7e2623daf38ced150257841002538278f7526b01",
+        "initialization_sha256": "2f160e4b51e918d99cd009940bcc6c99e2fc394ff86dc29ebbb60a27359ec7f1",
+        "augmentation_manifest_sha256": "55b85e207ce2c6a94303ae59356e581d1f29d7baf0b400afbdbcec31a7387b02",
+        "source_input_pairs_rechecked": 280,
+        "augmented_input_pairs_rechecked": 48,
+        "python": "3.12.3",
+        "torch": "2.11.0+cu128",
+        "ultralytics": "8.4.156",
+        "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+        "arguments": {
+          "data": "datasets/indian_manual280_zoom_replay_20261117/data.yaml",
+          "epochs": 12,
+          "patience": 12,
+          "imgsz": 960,
+          "batch": 2,
+          "device": 0,
+          "workers": 2,
+          "optimizer": "AdamW",
+          "lr0": 0.0001,
+          "lrf": 0.1,
+          "warmup_epochs": 1,
+          "warmup_bias_lr": 0.0001,
+          "cos_lr": true,
+          "freeze": 10,
+          "cls_remap": true,
+          "seed": 20261117,
+          "deterministic": true,
+          "amp": true,
+          "cache": false,
+          "close_mosaic": 3,
+          "nms": true,
+          "resume": false,
+          "pretrained": true,
+          "project": "runs/experiments",
+          "name": "indian_manual280_zoom_replay_20261117",
+          "exist_ok": false,
+          "plots": true
+        },
+        "comparison_scope": "Same initialization, seed and nominal epochs; replay has 48 additional geometric views and therefore more optimizer batches.",
+        "validation_selection": "Existing 59-image validation fitness selects best.pt; no new untouched final test exists."
+      },
+      "epochs_completed": 12
+    }
+  },
+  "decision": {
+    "promote_experimental_weights": false,
+    "road_reference_changed": false,
+    "general_demo_default_changed": false,
+    "reason": "Full-body probe improved but road validation and development F1 regressed; upper-body probe still fails.",
+    "next_data_need": "Separately reviewed close/partial-body examples and scene diversity with session/clip-separated validation."
+  },
+  "private_probe_input_hashes": {
+    "targets_sha256": "34f76544b1dc3477ed0d6d2747552becec6a6e7de75f61dbf193c54beacf1fc0",
+    "images": {
+      "three_women": "92c2539e7738a2a8281c63e211e3146f611577f37572cca8251d0481dc353b61",
+      "single_upper_body": "05be773aa85a800fc8d93ec9794c4c9c4f280388b564e556fe9d4b414afbd6b2"
+    }
+  },
+  "raw_images_coordinates_and_weights_published": false,
+  "ros_ci_setup": {
+    "source_package": "ros2-apt-source_1.3.0.noble_all.deb",
+    "sha256": "f31d84adf5054c7d60ded0e82c0f776a77ea33af53d08f40b9ad7c94cca55296",
+    "validated_run": "https://github.com/deepkukreja/amr_ai/actions/runs/44057659702",
+    "conclusion": "success"
+  }
+}

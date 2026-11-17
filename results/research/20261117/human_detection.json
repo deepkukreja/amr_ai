@@ -487,7 +487,7 @@
         "contains_human": 186
       },
       "maximum_box_area_fraction": 0.10623634902443575,
-      "median_box_area_fraction": 0.0020179223365416536
+      "median_box_area_fraction": 0.0020028361946715745
     },
     "val": {
       "images": 59,
@@ -536,15 +536,15 @@
     "predicted_labels_used": false,
     "all_positive_intersections_retained": true
   },
-  "source_tests_passed": 131,
+  "source_tests_passed": 135,
   "training": {
     "smoke": {
       "stage": "smoke",
-      "run": "/home/deepk12341234/amr_ai/runs/experiments/indian_manual280_zoom_smoke_20261117",
+      "run": "runs/experiments/indian_manual280_zoom_smoke_20261117",
       "best_sha256": "820da8075a830758367fed4db179b6a22f23725f4fdd9c560af1a5e70b59276b",
       "initialization_unchanged": true,
       "arguments": {
-        "data": "/home/deepk12341234/amr_ai/datasets/indian_manual280_zoom_replay_20261117/data.yaml",
+        "data": "datasets/indian_manual280_zoom_replay_20261117/data.yaml",
         "epochs": 1,
         "patience": 12,
         "imgsz": 960,
@@ -567,18 +567,83 @@
         "nms": true,
         "resume": false,
         "pretrained": true,
-        "project": "/home/deepk12341234/amr_ai/runs/experiments",
+        "project": "runs/experiments",
         "name": "indian_manual280_zoom_smoke_20261117",
         "exist_ok": false,
         "plots": true
       }
     },
     "control": {
-      "state": "pending"
+      "stage": "control",
+      "run": "runs/experiments/indian_manual280_zoom_control_20261117",
+      "best_sha256": "62b8012cd9a988c4bdef0515aaff49bf7fc31b8fca74c5f81154f389316cc15d",
+      "initialization_unchanged": true,
+      "arguments": {
+        "data": "datasets/indian_road_manual280_clean_v1/data.yaml",
+        "epochs": 12,
+        "patience": 12,
+        "imgsz": 960,
+        "batch": 2,
+        "device": 0,
+        "workers": 2,
+        "optimizer": "AdamW",
+        "lr0": 0.0001,
+        "lrf": 0.1,
+        "warmup_epochs": 1,
+        "warmup_bias_lr": 0.0001,
+        "cos_lr": true,
+        "freeze": 10,
+        "cls_remap": true,
+        "seed": 20261117,
+        "deterministic": true,
+        "amp": true,
+        "cache": false,
+        "close_mosaic": 3,
+        "nms": true,
+        "resume": false,
+        "pretrained": true,
+        "project": "runs/experiments",
+        "name": "indian_manual280_zoom_control_20261117",
+        "exist_ok": false,
+        "plots": true
+      }
     },
     "replay": {
-      "state": "pending"
+      "stage": "replay",
+      "run": "runs/experiments/indian_manual280_zoom_replay_20261117",
+      "best_sha256": "c8635852a0c0b84199dc278b437a054d1477c66044421e07cd6d6ec14155e75c",
+      "initialization_unchanged": true,
+      "arguments": {
+        "data": "datasets/indian_manual280_zoom_replay_20261117/data.yaml",
+        "epochs": 12,
+        "patience": 12,
+        "imgsz": 960,
+        "batch": 2,
+        "device": 0,
+        "workers": 2,
+        "optimizer": "AdamW",
+        "lr0": 0.0001,
+        "lrf": 0.1,
+        "warmup_epochs": 1,
+        "warmup_bias_lr": 0.0001,
+        "cos_lr": true,
+        "freeze": 10,
+        "cls_remap": true,
+        "seed": 20261117,
+        "deterministic": true,
+        "amp": true,
+        "cache": false,
+        "close_mosaic": 3,
+        "nms": true,
+        "resume": false,
+        "pretrained": true,
+        "project": "runs/experiments",
+        "name": "indian_manual280_zoom_replay_20261117",
+        "exist_ok": false,
+        "plots": true
+      }
     }
   },
-  "decision": "Keep current research reference and pretrained general-demo default; paired crop-replay experiment pending evaluation."
+  "decision": "Paired experiment complete: retain road reference and pretrained general-demo default; see zoom_replay.json for measured regressions.",
+  "measured_implementation_committed_at": "7e2623daf38ced150257841002538278f7526b01"
 }

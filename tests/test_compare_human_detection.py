@@ -66,3 +66,17 @@ def test_reviewed_person_and_rider_remain_separate_in_recall_breakdown(tmp_path)
     groups=comparison.recall_groups(truth,score['matches'])
     assert groups['class:person']=={'matched':0,'objects':1}
     assert groups['class:rider']=={'matched':1,'objects':1}
+
+
+def test_explicit_extra_checkpoint_keeps_person_rider_contract(tmp_path):
+    checkpoint=tmp_path/'new.pt';checkpoint.write_bytes(b'checkpoint fixture')
+    profiles=comparison.comparison_profiles(tmp_path,['replay=new.pt'])
+    assert profiles['replay'].checkpoint==checkpoint
+    assert profiles['replay'].names=={0:'person',1:'rider'}
+    assert profiles['replay'].thresholds=={'person':.19,'rider':.25}
+    assert 'warehouse' not in profiles
+
+
+def test_extra_checkpoint_cannot_replace_a_recorded_baseline(tmp_path):
+    with pytest.raises(ValueError,match='name'):
+        comparison.comparison_profiles(tmp_path,['general=new.pt'])
