@@ -1,0 +1,584 @@
+{
+  "created_utc": "2026-11-17T09:14:58.602079+00:00",
+  "script_sha256": "d346bab8478b26a595082b56326c779cc8dc5004076939b9996573150c895e73",
+  "source_revision": "3226bf77b9e17ba21484aca4d739f2b14f79da0a",
+  "scope": "Repeatedly used development data; not an independent final test.",
+  "task": "Class-agnostic human localization: both reviewed person and rider boxes count as humans.",
+  "limitations": [
+    "COCO has no rider classification; this does not replace two-class metrics.",
+    "Project rider boxes can include overlapping vehicle portions, affecting IoU with person-only predictions.",
+    "No threshold selection, training, annotation edits or split changes are performed."
+  ],
+  "protocol": {
+    "confidence": 0.25,
+    "matching_iou": 0.5,
+    "matching": "greedy descending-IoU, one-to-one",
+    "nms_iou": 0.7,
+    "nms": true,
+    "imgsz": 960,
+    "batch": 4,
+    "precision": "FP32",
+    "augment": false,
+    "small_area_fraction_below": 0.01,
+    "large_area_fraction_at_least": 0.1
+  },
+  "environment": {
+    "torch": "2.11.0+cu128",
+    "ultralytics": "8.4.156",
+    "device": "NVIDIA GeForce RTX 4060 Laptop GPU"
+  },
+  "data": {
+    "images": 166,
+    "objects": 346,
+    "manifest_sha256": "5963fd295e544c6ae883a4d41d39df539239afb1c2837346fff8d25d2e4f5378",
+    "previous_input_hashes_verified": true
+  },
+  "models": {
+    "general": {
+      "checkpoint_sha256": "646f8bc3fe0a656803d95c294f7852321748cb29d13466a1af8862e2db384a1b",
+      "classes": {
+        "0": "person"
+      },
+      "profile_thresholds": {
+        "person": 0.25
+      },
+      "summary": {
+        "common_025": {
+          "tp": 141,
+          "fp": 151,
+          "fn": 205,
+          "precision": 0.4828767123287671,
+          "recall": 0.407514450867052,
+          "f1": 0.44200626959247646,
+          "recall_by_groundtruth_group": {
+            "class:rider": {
+              "matched": 48,
+              "objects": 169,
+              "recall": 0.28402366863905326
+            },
+            "size:small": {
+              "matched": 124,
+              "objects": 318,
+              "recall": 0.389937106918239
+            },
+            "timeofday:dusk": {
+              "matched": 25,
+              "objects": 58,
+              "recall": 0.43103448275862066
+            },
+            "weather:clear": {
+              "matched": 125,
+              "objects": 312,
+              "recall": 0.40064102564102566
+            },
+            "class:person": {
+              "matched": 93,
+              "objects": 177,
+              "recall": 0.5254237288135594
+            },
+            "timeofday:night": {
+              "matched": 29,
+              "objects": 70,
+              "recall": 0.4142857142857143
+            },
+            "weather:foggy": {
+              "matched": 5,
+              "objects": 11,
+              "recall": 0.45454545454545453
+            },
+            "timeofday:daytime": {
+              "matched": 87,
+              "objects": 218,
+              "recall": 0.39908256880733944
+            },
+            "size:medium": {
+              "matched": 17,
+              "objects": 28,
+              "recall": 0.6071428571428571
+            },
+            "weather:rainy": {
+              "matched": 5,
+              "objects": 14,
+              "recall": 0.35714285714285715
+            },
+            "weather:overcast": {
+              "matched": 6,
+              "objects": 9,
+              "recall": 0.6666666666666666
+            }
+          }
+        },
+        "profile_thresholds": {
+          "tp": 141,
+          "fp": 151,
+          "fn": 205,
+          "precision": 0.4828767123287671,
+          "recall": 0.407514450867052,
+          "f1": 0.44200626959247646,
+          "recall_by_groundtruth_group": {
+            "class:rider": {
+              "matched": 48,
+              "objects": 169,
+              "recall": 0.28402366863905326
+            },
+            "size:small": {
+              "matched": 124,
+              "objects": 318,
+              "recall": 0.389937106918239
+            },
+            "timeofday:dusk": {
+              "matched": 25,
+              "objects": 58,
+              "recall": 0.43103448275862066
+            },
+            "weather:clear": {
+              "matched": 125,
+              "objects": 312,
+              "recall": 0.40064102564102566
+            },
+            "class:person": {
+              "matched": 93,
+              "objects": 177,
+              "recall": 0.5254237288135594
+            },
+            "timeofday:night": {
+              "matched": 29,
+              "objects": 70,
+              "recall": 0.4142857142857143
+            },
+            "weather:foggy": {
+              "matched": 5,
+              "objects": 11,
+              "recall": 0.45454545454545453
+            },
+            "timeofday:daytime": {
+              "matched": 87,
+              "objects": 218,
+              "recall": 0.39908256880733944
+            },
+            "size:medium": {
+              "matched": 17,
+              "objects": 28,
+              "recall": 0.6071428571428571
+            },
+            "weather:rainy": {
+              "matched": 5,
+              "objects": 14,
+              "recall": 0.35714285714285715
+            },
+            "weather:overcast": {
+              "matched": 6,
+              "objects": 9,
+              "recall": 0.6666666666666666
+            }
+          }
+        }
+      }
+    },
+    "reference": {
+      "checkpoint_sha256": "6372ac75302d49ee3df87e8b65ce6f71ca5b2d8bef6281da811299ac67b53e0c",
+      "classes": {
+        "0": "person",
+        "1": "rider"
+      },
+      "profile_thresholds": {
+        "person": 0.15,
+        "rider": 0.25
+      },
+      "summary": {
+        "common_025": {
+          "tp": 153,
+          "fp": 69,
+          "fn": 193,
+          "precision": 0.6891891891891891,
+          "recall": 0.4421965317919075,
+          "f1": 0.5387323943661971,
+          "recall_by_groundtruth_group": {
+            "class:rider": {
+              "matched": 76,
+              "objects": 169,
+              "recall": 0.44970414201183434
+            },
+            "size:small": {
+              "matched": 132,
+              "objects": 318,
+              "recall": 0.41509433962264153
+            },
+            "timeofday:dusk": {
+              "matched": 26,
+              "objects": 58,
+              "recall": 0.4482758620689655
+            },
+            "weather:clear": {
+              "matched": 138,
+              "objects": 312,
+              "recall": 0.4423076923076923
+            },
+            "class:person": {
+              "matched": 77,
+              "objects": 177,
+              "recall": 0.4350282485875706
+            },
+            "timeofday:night": {
+              "matched": 27,
+              "objects": 70,
+              "recall": 0.38571428571428573
+            },
+            "weather:foggy": {
+              "matched": 5,
+              "objects": 11,
+              "recall": 0.45454545454545453
+            },
+            "timeofday:daytime": {
+              "matched": 100,
+              "objects": 218,
+              "recall": 0.45871559633027525
+            },
+            "size:medium": {
+              "matched": 21,
+              "objects": 28,
+              "recall": 0.75
+            },
+            "weather:rainy": {
+              "matched": 6,
+              "objects": 14,
+              "recall": 0.42857142857142855
+            },
+            "weather:overcast": {
+              "matched": 4,
+              "objects": 9,
+              "recall": 0.4444444444444444
+            }
+          }
+        },
+        "profile_thresholds": {
+          "tp": 165,
+          "fp": 110,
+          "fn": 181,
+          "precision": 0.6,
+          "recall": 0.476878612716763,
+          "f1": 0.5314009661835749,
+          "recall_by_groundtruth_group": {
+            "class:rider": {
+              "matched": 77,
+              "objects": 169,
+              "recall": 0.4556213017751479
+            },
+            "size:small": {
+              "matched": 144,
+              "objects": 318,
+              "recall": 0.4528301886792453
+            },
+            "timeofday:dusk": {
+              "matched": 30,
+              "objects": 58,
+              "recall": 0.5172413793103449
+            },
+            "weather:clear": {
+              "matched": 150,
+              "objects": 312,
+              "recall": 0.4807692307692308
+            },
+            "class:person": {
+              "matched": 88,
+              "objects": 177,
+              "recall": 0.4971751412429379
+            },
+            "timeofday:night": {
+              "matched": 28,
+              "objects": 70,
+              "recall": 0.4
+            },
+            "weather:foggy": {
+              "matched": 5,
+              "objects": 11,
+              "recall": 0.45454545454545453
+            },
+            "timeofday:daytime": {
+              "matched": 107,
+              "objects": 218,
+              "recall": 0.4908256880733945
+            },
+            "size:medium": {
+              "matched": 21,
+              "objects": 28,
+              "recall": 0.75
+            },
+            "weather:rainy": {
+              "matched": 6,
+              "objects": 14,
+              "recall": 0.42857142857142855
+            },
+            "weather:overcast": {
+              "matched": 4,
+              "objects": 9,
+              "recall": 0.4444444444444444
+            }
+          }
+        }
+      }
+    },
+    "candidate": {
+      "checkpoint_sha256": "2f160e4b51e918d99cd009940bcc6c99e2fc394ff86dc29ebbb60a27359ec7f1",
+      "classes": {
+        "0": "person",
+        "1": "rider"
+      },
+      "profile_thresholds": {
+        "person": 0.19,
+        "rider": 0.25
+      },
+      "summary": {
+        "common_025": {
+          "tp": 170,
+          "fp": 125,
+          "fn": 176,
+          "precision": 0.576271186440678,
+          "recall": 0.4913294797687861,
+          "f1": 0.5304212168486739,
+          "recall_by_groundtruth_group": {
+            "class:rider": {
+              "matched": 80,
+              "objects": 169,
+              "recall": 0.47337278106508873
+            },
+            "size:small": {
+              "matched": 150,
+              "objects": 318,
+              "recall": 0.4716981132075472
+            },
+            "timeofday:dusk": {
+              "matched": 31,
+              "objects": 58,
+              "recall": 0.5344827586206896
+            },
+            "weather:clear": {
+              "matched": 152,
+              "objects": 312,
+              "recall": 0.48717948717948717
+            },
+            "class:person": {
+              "matched": 90,
+              "objects": 177,
+              "recall": 0.5084745762711864
+            },
+            "timeofday:night": {
+              "matched": 28,
+              "objects": 70,
+              "recall": 0.4
+            },
+            "weather:foggy": {
+              "matched": 6,
+              "objects": 11,
+              "recall": 0.5454545454545454
+            },
+            "timeofday:daytime": {
+              "matched": 111,
+              "objects": 218,
+              "recall": 0.5091743119266054
+            },
+            "size:medium": {
+              "matched": 20,
+              "objects": 28,
+              "recall": 0.7142857142857143
+            },
+            "weather:rainy": {
+              "matched": 6,
+              "objects": 14,
+              "recall": 0.42857142857142855
+            },
+            "weather:overcast": {
+              "matched": 6,
+              "objects": 9,
+              "recall": 0.6666666666666666
+            }
+          }
+        },
+        "profile_thresholds": {
+          "tp": 176,
+          "fp": 142,
+          "fn": 170,
+          "precision": 0.5534591194968553,
+          "recall": 0.5086705202312138,
+          "f1": 0.5301204819277109,
+          "recall_by_groundtruth_group": {
+            "class:rider": {
+              "matched": 81,
+              "objects": 169,
+              "recall": 0.47928994082840237
+            },
+            "size:small": {
+              "matched": 156,
+              "objects": 318,
+              "recall": 0.49056603773584906
+            },
+            "timeofday:dusk": {
+              "matched": 31,
+              "objects": 58,
+              "recall": 0.5344827586206896
+            },
+            "weather:clear": {
+              "matched": 157,
+              "objects": 312,
+              "recall": 0.5032051282051282
+            },
+            "class:person": {
+              "matched": 95,
+              "objects": 177,
+              "recall": 0.536723163841808
+            },
+            "timeofday:night": {
+              "matched": 30,
+              "objects": 70,
+              "recall": 0.42857142857142855
+            },
+            "weather:foggy": {
+              "matched": 7,
+              "objects": 11,
+              "recall": 0.6363636363636364
+            },
+            "timeofday:daytime": {
+              "matched": 115,
+              "objects": 218,
+              "recall": 0.5275229357798165
+            },
+            "size:medium": {
+              "matched": 20,
+              "objects": 28,
+              "recall": 0.7142857142857143
+            },
+            "weather:rainy": {
+              "matched": 6,
+              "objects": 14,
+              "recall": 0.42857142857142855
+            },
+            "weather:overcast": {
+              "matched": 6,
+              "objects": 9,
+              "recall": 0.6666666666666666
+            }
+          }
+        }
+      }
+    }
+  },
+  "reviewed_data_coverage": {
+    "train": {
+      "images": 221,
+      "objects": 584,
+      "area_groups": {
+        "small": 513,
+        "medium": 70,
+        "large": 1
+      },
+      "by_class": {
+        "rider": {
+          "small": 284,
+          "medium": 39,
+          "large": 1
+        },
+        "person": {
+          "small": 229,
+          "medium": 31
+        }
+      },
+      "image_groups": {
+        "empty": 35,
+        "contains_human": 186
+      },
+      "maximum_box_area_fraction": 0.10623634902443575,
+      "median_box_area_fraction": 0.0020179223365416536
+    },
+    "val": {
+      "images": 59,
+      "objects": 151,
+      "area_groups": {
+        "small": 125,
+        "medium": 23,
+        "large": 3
+      },
+      "by_class": {
+        "person": {
+          "small": 57,
+          "medium": 6,
+          "large": 1
+        },
+        "rider": {
+          "small": 68,
+          "medium": 17,
+          "large": 2
+        }
+      },
+      "image_groups": {
+        "empty": 10,
+        "contains_human": 49
+      },
+      "maximum_box_area_fraction": 0.18849387007815194,
+      "median_box_area_fraction": 0.0022245024584023445
+    }
+  },
+  "crop_replay": {
+    "scope": "Geometric training augmentation only; not new independent scenes or newly reviewed annotations.",
+    "source_dataset": "indian_road_manual280_clean_v1",
+    "source_manifest_sha256": "8f3edcd1ede3672d9e00f09778cde76aeb8c455fed0fa3ced55ad1aedb9d9360",
+    "source_input_hashes_verified": 280,
+    "base_train_images": 221,
+    "validation_images": 59,
+    "validation_changed": false,
+    "crop_images": 48,
+    "source_targets": 24,
+    "source_clips": 16,
+    "source_minimum_person_width_px": 32,
+    "source_minimum_person_height_px": 100,
+    "train_validation_clip_overlap": 0,
+    "train_development_clip_overlap": 0,
+    "user_photos_or_webcam_used": false,
+    "predicted_labels_used": false,
+    "all_positive_intersections_retained": true
+  },
+  "source_tests_passed": 131,
+  "training": {
+    "smoke": {
+      "stage": "smoke",
+      "run": "/home/deepk12341234/amr_ai/runs/experiments/indian_manual280_zoom_smoke_20261117",
+      "best_sha256": "820da8075a830758367fed4db179b6a22f23725f4fdd9c560af1a5e70b59276b",
+      "initialization_unchanged": true,
+      "arguments": {
+        "data": "/home/deepk12341234/amr_ai/datasets/indian_manual280_zoom_replay_20261117/data.yaml",
+        "epochs": 1,
+        "patience": 12,
+        "imgsz": 960,
+        "batch": 2,
+        "device": 0,
+        "workers": 2,
+        "optimizer": "AdamW",
+        "lr0": 0.0001,
+        "lrf": 0.1,
+        "warmup_epochs": 1,
+        "warmup_bias_lr": 0.0001,
+        "cos_lr": true,
+        "freeze": 10,
+        "cls_remap": true,
+        "seed": 20261117,
+        "deterministic": true,
+        "amp": true,
+        "cache": false,
+        "close_mosaic": 0,
+        "nms": true,
+        "resume": false,
+        "pretrained": true,
+        "project": "/home/deepk12341234/amr_ai/runs/experiments",
+        "name": "indian_manual280_zoom_smoke_20261117",
+        "exist_ok": false,
+        "plots": true
+      }
+    },
+    "control": {
+      "state": "pending"
+    },
+    "replay": {
+      "state": "pending"
+    }
+  },
+  "decision": "Keep current research reference and pretrained general-demo default; paired crop-replay experiment pending evaluation."
+}
