@@ -29,3 +29,21 @@ To reproduce from the repository root with the existing GPU environment, dataset
 ```
 
 The evaluation also reads the recorded checkpoint from the previous unchanged-data control. Images, source annotations, and model weights are local. The experiment uses no user-supplied photographs or webcam footage.
+
+## Results
+
+| Checkpoint | Indoor TP / FP / FN | Indoor F1 | Large boxes matched | Road mAP50–95 |
+|---|---:|---:|---:|---:|
+| Pretrained COCO person | 21 / 1 / 1 | 95.45% | 9 / 10 | — |
+| Road reference | 3 / 8 / 19 | 18.18% | 0 / 10 | 20.36% |
+| Starting road candidate | 9 / 0 / 13 | 58.06% | 0 / 10 | 21.90% |
+| Prior unchanged-data continuation | 10 / 0 / 12 | 62.50% | 0 / 10 | 20.26% |
+| Indoor replay continuation | 16 / 2 / 6 | 80.00% | 5 / 10 | 20.98% |
+
+The replay checkpoint changed indoor true positives by +7, false positives by +2, and road mAP50–95 by -0.92 percentage points relative to its starting checkpoint.
+The indoor metrics count the person class only. The road metric evaluates person and rider.
+The saved replay checkpoint matched 3 of 3 targets in the earlier foreground photo and 0 of 1 target in the earlier upper-body crop at the same 0.19 person threshold. These local probes contain selected foreground targets.
+
+The road reference and pretrained demo model remain selected. The two captures come from the same store, so the result supports further evaluation across different sites and camera viewpoints before promotion.
+
+[Machine-readable results](../results/research/20261122/indoor_replay.json)

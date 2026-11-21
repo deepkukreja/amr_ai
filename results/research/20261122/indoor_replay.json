@@ -1,0 +1,236 @@
+{
+  "data": {
+    "source": "https://doi.org/10.5281/zenodo.18459791",
+    "road_images": {
+      "train": 221,
+      "val": 59
+    },
+    "capture_pool": {
+      "train": [
+        360,
+        132
+      ],
+      "probe": [
+        449,
+        129
+      ]
+    },
+    "selected": {
+      "train": 19,
+      "probe": 16
+    },
+    "large_boxes": {
+      "train": 8,
+      "probe": 10
+    },
+    "min_box_area_fraction": 0.02,
+    "min_frame_gap": 8,
+    "validation_includes_indoor_probe": false
+  },
+  "stages": {
+    "smoke": {
+      "manifest_sha256": "ca98fa45a7b6a01181a869d3d70eac1c64e6a5e1de07294a85b17db5aa25156d",
+      "script_sha256": "f849ad65e0519808213b4d33633615ae8b2a5ddf4e9cf1d341788ac9516f9d6f",
+      "revision": "ebf7385b303a6b952239729d7c92bbcd5d5ee74f",
+      "initialization_sha256": "2f160e4b51e918d99cd009940bcc6c99e2fc394ff86dc29ebbb60a27359ec7f1",
+      "torch": "2.11.0+cu128",
+      "ultralytics": "8.4.156",
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "arguments": {
+        "data": "datasets/indian_manual280_indoor_replay_20261122/data.yaml",
+        "epochs": 1,
+        "patience": 12,
+        "imgsz": 960,
+        "batch": 2,
+        "device": 0,
+        "workers": 2,
+        "optimizer": "AdamW",
+        "lr0": 0.0001,
+        "lrf": 0.1,
+        "warmup_epochs": 1,
+        "warmup_bias_lr": 0.0001,
+        "cos_lr": true,
+        "freeze": 10,
+        "cls_remap": true,
+        "seed": 20261117,
+        "deterministic": true,
+        "amp": true,
+        "cache": false,
+        "close_mosaic": 0,
+        "nms": true,
+        "resume": false,
+        "pretrained": true,
+        "project": "results/local/indoor_replay_20261122",
+        "name": "smoke",
+        "exist_ok": false,
+        "plots": true
+      },
+      "best_sha256": "031c1b9d85fa28a1bceb392aa2ffb559b52679b3ea8b04c45c796cfb1ab30afc",
+      "epochs_completed": 1,
+      "best_epoch_by_logged_map": 1
+    },
+    "train": {
+      "manifest_sha256": "ca98fa45a7b6a01181a869d3d70eac1c64e6a5e1de07294a85b17db5aa25156d",
+      "script_sha256": "74b87a08c0f5e14c0b2d9987d2619e759716c885daf598ef3db1bee16edc71ee",
+      "revision": "ebf7385b303a6b952239729d7c92bbcd5d5ee74f",
+      "initialization_sha256": "2f160e4b51e918d99cd009940bcc6c99e2fc394ff86dc29ebbb60a27359ec7f1",
+      "torch": "2.11.0+cu128",
+      "ultralytics": "8.4.156",
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "arguments": {
+        "data": "datasets/indian_manual280_indoor_replay_20261122/data.yaml",
+        "epochs": 12,
+        "patience": 12,
+        "imgsz": 960,
+        "batch": 2,
+        "device": 0,
+        "workers": 2,
+        "optimizer": "AdamW",
+        "lr0": 0.0001,
+        "lrf": 0.1,
+        "warmup_epochs": 1,
+        "warmup_bias_lr": 0.0001,
+        "cos_lr": true,
+        "freeze": 10,
+        "cls_remap": true,
+        "seed": 20261117,
+        "deterministic": true,
+        "amp": true,
+        "cache": false,
+        "close_mosaic": 3,
+        "nms": true,
+        "resume": false,
+        "pretrained": true,
+        "project": "results/local/indoor_replay_20261122",
+        "name": "train",
+        "exist_ok": false,
+        "plots": true
+      },
+      "best_sha256": "de5032ebce36784dee37ef8b9c79b96a8973d8a9334d0dd6f8cf63a435359c36",
+      "epochs_completed": 12,
+      "best_epoch_by_logged_map": 1
+    },
+    "evaluate": {
+      "manifest_sha256": "ca98fa45a7b6a01181a869d3d70eac1c64e6a5e1de07294a85b17db5aa25156d",
+      "script_sha256": "74b87a08c0f5e14c0b2d9987d2619e759716c885daf598ef3db1bee16edc71ee",
+      "revision": "08d2edd380ba48c683d270a5c33a2ebbd2e406f2",
+      "initialization_sha256": "2f160e4b51e918d99cd009940bcc6c99e2fc394ff86dc29ebbb60a27359ec7f1",
+      "torch": "2.11.0+cu128",
+      "ultralytics": "8.4.156",
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "indoor_confidence": 0.25,
+      "matching_iou": 0.5,
+      "models": {
+        "pretrained": {
+          "sha256": "646f8bc3fe0a656803d95c294f7852321748cb29d13466a1af8862e2db384a1b",
+          "indoor": {
+            "tp": 21,
+            "fp": 1,
+            "fn": 1,
+            "precision": 0.9545454545454546,
+            "recall": 0.9545454545454546,
+            "f1": 0.9545454545454546,
+            "large_tp": 9,
+            "large_fn": 1,
+            "images": 16
+          }
+        },
+        "road_reference": {
+          "sha256": "6372ac75302d49ee3df87e8b65ce6f71ca5b2d8bef6281da811299ac67b53e0c",
+          "indoor": {
+            "tp": 3,
+            "fp": 8,
+            "fn": 19,
+            "precision": 0.2727272727272727,
+            "recall": 0.13636363636363635,
+            "f1": 0.18181818181818182,
+            "large_tp": 0,
+            "large_fn": 10,
+            "images": 16
+          },
+          "road_validation": {
+            "metrics/precision(B)": 0.719557434340657,
+            "metrics/recall(B)": 0.5628591954022988,
+            "metrics/mAP50(B)": 0.5959144941850174,
+            "metrics/mAP50-95(B)": 0.20363525910404653,
+            "fitness": 0.20363525910404653
+          }
+        },
+        "starting_candidate": {
+          "sha256": "2f160e4b51e918d99cd009940bcc6c99e2fc394ff86dc29ebbb60a27359ec7f1",
+          "indoor": {
+            "tp": 9,
+            "fp": 0,
+            "fn": 13,
+            "precision": 1.0,
+            "recall": 0.4090909090909091,
+            "f1": 0.5806451612903226,
+            "large_tp": 0,
+            "large_fn": 10,
+            "images": 16
+          },
+          "road_validation": {
+            "metrics/precision(B)": 0.7595235087003767,
+            "metrics/recall(B)": 0.5686063218390804,
+            "metrics/mAP50(B)": 0.6333866111966419,
+            "metrics/mAP50-95(B)": 0.21903698778953756,
+            "fitness": 0.21903698778953756
+          }
+        },
+        "prior_control": {
+          "sha256": "62b8012cd9a988c4bdef0515aaff49bf7fc31b8fca74c5f81154f389316cc15d",
+          "indoor": {
+            "tp": 10,
+            "fp": 0,
+            "fn": 12,
+            "precision": 1.0,
+            "recall": 0.45454545454545453,
+            "f1": 0.625,
+            "large_tp": 0,
+            "large_fn": 10,
+            "images": 16
+          },
+          "road_validation": {
+            "metrics/precision(B)": 0.7064609807088846,
+            "metrics/recall(B)": 0.49055235375195794,
+            "metrics/mAP50(B)": 0.567419536528906,
+            "metrics/mAP50-95(B)": 0.20263440793323367,
+            "fitness": 0.20263440793323367
+          }
+        },
+        "indoor_replay": {
+          "sha256": "de5032ebce36784dee37ef8b9c79b96a8973d8a9334d0dd6f8cf63a435359c36",
+          "indoor": {
+            "tp": 16,
+            "fp": 2,
+            "fn": 6,
+            "precision": 0.8888888888888888,
+            "recall": 0.7272727272727273,
+            "f1": 0.8,
+            "large_tp": 5,
+            "large_fn": 5,
+            "images": 16
+          },
+          "road_validation": {
+            "metrics/precision(B)": 0.7237153761101003,
+            "metrics/recall(B)": 0.5472341954022988,
+            "metrics/mAP50(B)": 0.5972714649277076,
+            "metrics/mAP50-95(B)": 0.2098128409698005,
+            "fitness": 0.2098128409698005
+          }
+        }
+      }
+    }
+  },
+  "local_photo_probe_aggregate": {
+    "three_women": {
+      "targets": 3,
+      "matched": 3
+    },
+    "single_upper_body": {
+      "targets": 1,
+      "matched": 0
+    }
+  },
+  "decision": "Retain the road reference and pretrained demo model. Keep this small same-store pilot as research evidence."
+}
