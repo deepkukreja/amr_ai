@@ -13,3 +13,9 @@ Apply the [AMR GitHub publishing skill](.agents/skills/amr-github-publish/SKILL.
 ## Cross-chat coordination
 
 Apply the [AMR chat coordination skill](.agents/skills/amr-chat-coordination/SKILL.md) before planning or resuming substantial work. Read relevant peer updates and use the shared AMR project's local `coordination/` directory. When working in WSL, resolve the same Windows workspace through its mounted path. Check for file, interface, and runtime overlap before editing. Keep chat handoffs out of the repository and publish verified project changes through the GitHub workflow above.
+
+## Integration and product theme
+
+Apply the [AMR integration verification skill](.agents/skills/amr-integration-verification/SKILL.md) when a change crosses an AMR component boundary or presents evidence of integrated behavior.
+
+Use the website's Robot Buildworks theme across final AMR interfaces. The [shared product theme](design/README.md) defines the design tokens and how to apply them. Keep test fixtures, temporary demos, and diagnostic tools functional and lightweight. Spend visual polish and review time on final deliverables.
