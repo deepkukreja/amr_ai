@@ -1,0 +1,12 @@
+/* Shared product tokens from the website's Robot Buildworks brand layer. */
+:root {
+  --paper: #fafafa;
+  --surface: #edf0f2;
+  --ink: #20252a;
+  --muted: #515a64;
+  --rule: #d4d9dd;
+  --accent: #294b64;
+  --accent-soft: #e4ebf0;
+  --font: system-ui, 'Segoe UI', sans-serif;
+  --radius: 2px;
+}
