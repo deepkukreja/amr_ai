@@ -20,6 +20,7 @@ Run `.venv/bin/python scripts/laptop_demo.py` in the local WSL checkout, then op
 
 ## Start here
 
+- **[Object detection roadmap](docs/broad_object_detection_roadmap.md):** class priorities, baseline comparison, data collection, training, and robot verification for vehicles, riders, people, warehouse equipment, and animals.
 - **[Dataset guide](datasets/README.md):** what the dataset folders mean, which files are tracked, how to prepare local data, and important class/split cautions.
 - **[Experiment history](docs/experiments.md):** the progression of the perception experiments and recorded results.
 - **[Dataset inventory](docs/data_inventory.md):** an inventory of local dataset folders. It describes the machine used to create it; it does not guarantee that all listed data is tracked, shareable, labelled, or ready to train.
