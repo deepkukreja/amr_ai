@@ -9,3 +9,7 @@ Unknown or stale measurements remain unknown. Keep simulation provenance explici
 ## GitHub publishing
 
 Apply the [AMR GitHub publishing skill](.agents/skills/amr-github-publish/SKILL.md) when completing verified repository changes. The user's standing preference across AMR chats is to commit the task's changes, push to the intended GitHub branch, and report the commit link.
+
+## Cross-chat coordination
+
+Apply the [AMR chat coordination skill](.agents/skills/amr-chat-coordination/SKILL.md) before planning or resuming substantial work. Read relevant peer updates and use the shared AMR project's local `coordination/` directory. When working in WSL, resolve the same Windows workspace through its mounted path. Check for file, interface, and runtime overlap before editing. Keep chat handoffs out of the repository and publish verified project changes through the GitHub workflow above.
