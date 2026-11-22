@@ -6,13 +6,14 @@ import {
   Video, Waypoints,
 } from 'lucide-react';
 import { createScene } from './scene.js';
+import { CameraPreview } from './CameraPreview.jsx';
 import wordmark from './wordmark.webp';
 import '../../design/robot-buildworks-theme.css';
 import './style.css';
 
 const views = [
   ['follow', 'Follow'], ['bird', 'Bird’s-eye'], ['cloud', 'Point cloud'],
-  ['semantic', 'Semantic'], ['occupancy', 'Occupancy'], ['debug', 'Debug'],
+  ['semantic', 'Semantic'], ['occupancy', 'Occupancy'], ['camera', 'Front camera'], ['debug', 'Debug'],
 ];
 const radToDeg = radians => radians * 180 / Math.PI;
 const hasCapturedMap = frame => ['GAZEBO', 'NAV2_PLAN'].includes(frame?.provenance);
@@ -52,7 +53,8 @@ function useScenario(config, scenario, replayMode) {
     let session;
     stream.addEventListener('world', event => {
       const frame = JSON.parse(event.data);
-      if (frame.version !== 1 || frame.mode !== 'SIMULATION' || frame.scenario !== scenario) return;
+      if (frame.version !== 1 || frame.scenario !== scenario
+        || (frame.mode !== 'SIMULATION' && !(scenario === 'ros-world' && frame.mode === 'LIVE'))) return;
       if (frame.session === session && frame.sequence <= sequence) return;
       sequence = frame.sequence;
       session = frame.session;
@@ -110,7 +112,8 @@ function WorldView({ profiles, environment, snapshot, view, setView, selected, t
   const obstacle = snapshot?.events[0];
   const showCloud = view === 'cloud' || view === 'debug';
   const captured = hasCapturedMap(snapshot);
-  const nav2 = snapshot?.provenance === 'NAV2_PLAN';
+  const stream = snapshot?.provenance === 'ROS_STREAM';
+  const nav2 = snapshot?.provenance === 'NAV2_PLAN' || stream;
   const pose = snapshot?.robot.pose;
   return <section className="panel world-panel" aria-label="World view" data-plan={nav2}>
     <div className="panel-header world-header">
@@ -121,7 +124,7 @@ function WorldView({ profiles, environment, snapshot, view, setView, selected, t
         </select>
       </label>
     </div>
-    <div className="viewport" ref={surface}>
+    <div className="viewport" ref={surface} data-camera={view === 'camera'}>
       <div className="canvas-host" ref={canvas} />
       <div className="scene-labels" ref={labels} aria-hidden="true" />
       {rendererError && <div className="viewport-message" role="status">{rendererError}</div>}
@@ -133,13 +136,15 @@ function WorldView({ profiles, environment, snapshot, view, setView, selected, t
         {view === 'debug' && <><br />{snapshot.frame} · #{snapshot.sequence}<br />
           {pose ? `X ${pose.x.toFixed(2)} · Y ${pose.y.toFixed(2)} · Yaw ${radToDeg(pose.yaw).toFixed(1)}°` : 'Pose unavailable'}</>}
       </div>}
+      <CameraPreview camera={snapshot?.camera} expanded={view === 'camera'} open={() => setView('camera')} />
       {obstacle && <div className="viewport-warning"><TriangleAlert size={15} aria-hidden="true" /> {obstacle.label}</div>}
       <div className="legend">
-        {view === 'occupancy' || captured ? <>
+        {view === 'occupancy' || captured || stream ? <>
           <span><i className="legend-square free" /> Observed free</span>
           <span><i className="legend-square occupied" /> Occupied</span>
           <span><i className="legend-square unknown" /> Unknown</span>
-          {nav2 && <span><i className="plan-ribbon" /> Nav2 planned path</span>}
+          {nav2 && snapshot?.nav.planned.length > 0 && <span><i className="plan-ribbon" /> Nav2 planned path</span>}
+          {stream && snapshot.cloud && <span><i className="lidar-returns" /> LiDAR returns</span>}
           {snapshot?.provenance === 'GAZEBO' && <span><i className="history" /> Gazebo truth history</span>}
         </> : <>
           <span><i className="planned" /> Planned route</span>
@@ -160,7 +165,7 @@ function WorldView({ profiles, environment, snapshot, view, setView, selected, t
     </div>
     <div className="viewport-footer mono">
       <span><span className={transport === 'ready' ? 'small-dot' : 'small-dot stale'} />{
-        transport === 'ready' ? nav2 ? 'Nav2 plan loaded' : captured ? 'Gazebo capture loaded' : 'World stream ready'
+        transport === 'ready' ? stream ? 'ROS stream ready' : nav2 ? 'Nav2 plan loaded' : captured ? 'Gazebo capture loaded' : 'World stream ready'
           : transport === 'offline' ? 'Bridge disconnected' : 'Connecting'
       }</span>
       <span>{snapshot?.frame ?? 'Frame unavailable'}{snapshot ? `  /  #${String(snapshot.sequence).padStart(3, '0')}` : ''}</span>
@@ -178,7 +183,8 @@ function RobotStatus({ frame }) {
       <div><dt><CircleDot /> Steering</dt><dd>{robot?.steering != null ? `${radToDeg(robot.steering).toFixed(1)}°` : '—'}</dd></div>
       <div><dt><BatteryMedium /> Battery</dt><dd>{robot?.battery != null ? `${robot.battery.toFixed(0)}%` : '—'}</dd></div>
       <div><dt><MapPin /> Localization</dt><dd className={robot?.localization.status === 'uncertain' ? 'warning-text' : 'data-text'}>
-        {robot?.localization.varianceM2 != null ? <><span className="capitalized">{robot.localization.status}</span> <small>{robot.localization.varianceM2.toFixed(3)} m²</small></> : '—'}
+        {robot?.localization.varianceM2 != null ? <><span className="capitalized">{robot.localization.status}</span> <small>{robot.localization.varianceM2.toFixed(3)} m²</small></>
+          : frame?.provenance === 'ROS_STREAM' ? robot.localization.status : '—'}
       </dd></div>
       <div><dt><Waypoints /> Navigation</dt><dd className={frame?.events.length ? 'warning-text' : ''}>{frame?.nav.state ?? '—'}</dd></div>
       <div><dt><MapPin /> Destination</dt><dd>{frame?.nav.destination ?? '—'}</dd></div>
@@ -222,14 +228,15 @@ function Diagnostics({ frame, transport }) {
   const sensors = frame?.sensors ?? [];
   return <>
     <section className="inspector" aria-label="Sensor diagnostics">
-      <div className="panel-header"><h2>Sensors</h2><span className="caption mono">{sensors.length ? 'SIMULATED INPUTS' : 'NO DATA'}</span></div>
+      <div className="panel-header"><h2>Sensors</h2><span className="caption mono">{sensors.length
+        ? frame?.mode === 'LIVE' ? 'LIVE INPUTS' : 'SIMULATED INPUTS' : 'NO DATA'}</span></div>
       <dl className="sensor-list">
         {sensors.map(sensor => {
           const Icon = sensorIcons[sensor.id] ?? Activity;
           const status = transport === 'offline' ? 'unknown' : sensor.status;
           return <div key={sensor.id}><dt><Icon /> {sensor.name}</dt><dd>
             <span className={status === 'fresh' ? 'data-text' : 'warning-text'}>{status}</span>
-            <small>{status === 'fresh' ? `${sensor.hz} Hz` : sensor.ageMs === null ? '—' : `${sensor.ageMs} ms`}</small>
+            <small>{status === 'fresh' && sensor.hz ? `${sensor.hz} Hz` : sensor.ageMs == null ? '—' : `${sensor.ageMs} ms`}</small>
           </dd></div>;
         })}
       </dl>
@@ -255,7 +262,8 @@ function Inspector({ frame, selected, setSelected, transport }) {
         {frame?.events.map(event => <p className="warning-line" key={event.code}>
           <TriangleAlert size={16} /> <span>{event.label}</span>
         </p>)}
-        {frame?.events.length === 0 && <p className="empty">{hasCapturedMap(frame) ? 'Unavailable in this capture' : 'No active warnings'}</p>}
+        {frame?.events.length === 0 && <p className="empty">{hasCapturedMap(frame) ? 'Unavailable in this capture'
+          : frame.provenance === 'ROS_STREAM' ? 'See Diagnostics for source health' : 'No active warnings'}</p>}
         {!frame && <p className="empty">Awaiting diagnostics</p>}
       </section>
     </>}
@@ -305,10 +313,15 @@ function App() {
   const { live, recording, state } = useScenario(config, scenario, replay);
   const replayFrame = recording?.scenario === scenario && recording.frames[Math.min(recording.frames.length - 1, Math.floor(cursor / recording.intervalMs))];
   const active = playing ? live : frozen ?? live;
-  const snapshot = replay ? replayFrame || null : active?.scenario === scenario ? active : null;
   const option = config?.scenarios.find(item => item.id === scenario);
   const captured = option?.replayOnly;
   const snapshotOnly = option?.snapshotOnly;
+  const streamOnly = option?.streamOnly;
+  const world = replay ? replayFrame || null : active?.scenario === scenario ? active : null;
+  const snapshot = streamOnly && state === 'offline' && world ? {
+    ...world, cloud: null, camera: null, robot: { ...world.robot, pose: null, localization: { status: 'unavailable' } },
+    nav: { ...world.nav, state: 'Plan unavailable', planned: [] },
+  } : world;
   const environment = config?.environments[option?.site];
   const ready = state === 'ready';
   const transport = setupError ? 'offline' : state;
@@ -359,41 +372,42 @@ function App() {
     setPlaying(!nextMode);
   }
 
+  const mode = streamOnly ? (state === 'offline' ? 'STALE' : snapshot?.mode ?? 'CONNECTING') : replay ? 'REPLAY' : 'SIMULATION';
   return <>
-    <header className="topbar"><Logo /><div className="mode-badge" data-mode={replay ? 'replay' : 'simulation'}>
-      <span className="small-dot" />{replay ? 'REPLAY' : 'SIMULATION'}
+    <header className="topbar"><Logo /><div className="mode-badge" data-mode={mode.toLowerCase()}>
+      <span className="small-dot" />{mode}
     </div></header>
     <main>
       <div className="page-head">
         <div><h1>Environment</h1>
-          <p className="mono"><span>{captured ? option.siteName ?? 'Small warehouse' : environment?.name ?? 'Waiting for source'}</span>
-            <b>/</b>{snapshotOnly ? 'Nav2 plan capture' : captured ? 'Gazebo route capture' : environment?.zone ?? 'Perception workspace'}</p>
+          <p className="mono"><span>{streamOnly ? snapshot?.site ?? 'Waiting for ROS' : captured ? option.siteName ?? 'Small warehouse' : environment?.name ?? 'Waiting for source'}</span>
+            <b>/</b>{streamOnly ? 'ROS observation' : snapshotOnly ? 'Nav2 plan capture' : captured ? 'Gazebo route capture' : environment?.zone ?? 'Perception workspace'}</p>
         </div>
         <div className="source-controls">
           <label className="scenario-label" htmlFor="scenario">Source</label>
           <select id="scenario" value={scenario} disabled={!config} onChange={event => {
             const next = config.scenarios.find(item => item.id === event.target.value);
-            const mode = next.replayOnly || replay;
+            const mode = !next.streamOnly && (next.replayOnly || replay);
             setScenario(next.id);
             setReplay(mode);
-            if (next.replayOnly) setView(next.snapshotOnly ? 'follow' : 'occupancy');
+            if (next.streamOnly || next.replayOnly) setView(next.streamOnly || next.snapshotOnly ? 'follow' : 'occupancy');
             resetTimeline(mode);
           }}>
             {!config && <option>Loading…</option>}
-            {config && ['Indoor', 'Outdoor', 'Recording'].map(group => {
+            {config && ['ROS', 'Indoor', 'Outdoor', 'Recording'].map(group => {
               const options = config.scenarios.filter(item =>
-                (item.replayOnly ? 'Recording' : config.environments[item.site]?.setting) === group);
+                (item.streamOnly ? 'ROS' : item.replayOnly ? 'Recording' : config.environments[item.site]?.setting) === group);
               return options.length > 0 && <optgroup key={group} label={group}>
                 {options.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
               </optgroup>;
             })}
           </select>
-          <label className="switch-label"><span>Replay</span><input type="checkbox" role="switch" checked={replay} onChange={event => {
+          {!streamOnly && <label className="switch-label"><span>Replay</span><input type="checkbox" role="switch" checked={replay} onChange={event => {
             const enabled = event.target.checked;
             if (!enabled && captured) { setScenario('pedestrian'); setView('follow'); }
             setReplay(enabled);
             resetTimeline(enabled);
-          }} /><span className="switch-track" aria-hidden="true" /></label>
+          }} /><span className="switch-track" aria-hidden="true" /></label>}
         </div>
       </div>
       {setupError && <p className="setup-error" role="alert">Configuration unavailable. {setupError}. Reload after starting the bridge.</p>}
@@ -402,10 +416,11 @@ function App() {
           view={view} setView={setView} selected={selected} transport={transport} />
         <Inspector frame={snapshot} selected={selected} setSelected={setSelected} transport={transport} />
       </div>
-      {!snapshotOnly && <Timeline recording={recording} snapshot={snapshot} replay={replay} ready={ready} playing={playing}
+      {!snapshotOnly && !streamOnly && <Timeline recording={recording} snapshot={snapshot} replay={replay} ready={ready} playing={playing}
         setPlaying={togglePlay} cursor={cursor} setCursor={setCursor} speed={speed} setSpeed={setSpeed} />}
       <footer className="footer mono"><span>World contract v1</span><span>Source · {
-        snapshotOnly ? snapshot?.source === 'ROS_CAPTURE' ? 'Recorded ROS map, pose and path' : 'Nav2 planner-only fixture'
+        streamOnly ? snapshot?.source === 'ROS_SENSOR_FIXTURE' ? 'ROS sensor fixture' : 'ROS read-only stream'
+          : snapshotOnly ? snapshot?.source === 'ROS_CAPTURE' ? 'Recorded ROS map, pose and path' : 'Nav2 planner-only fixture'
           : captured ? 'Gazebo truth and wheel odometry' : replay ? 'recorded scenario' : 'scenario simulation'
       }</span></footer>
     </main>

@@ -6,7 +6,8 @@ const standard = (color, roughness = 0.73, metalness = 0.14) => new THREE.MeshSt
 const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 const wheelGeometry = new THREE.CylinderGeometry(1, 1, 1, 24);
 const colors = { rack: '#466385', beam: '#b16a3d', steel: '#6b8090', pallet: '#8e7356', cyan: '#41dcf7', amber: '#ffad56' };
-const hasRecordedMap = frame => ['GAZEBO', 'NAV2_PLAN'].includes(frame?.provenance);
+const hasMap = frame => ['GAZEBO', 'NAV2_PLAN', 'ROS_STREAM'].includes(frame?.provenance);
+const hasNav2 = frame => ['NAV2_PLAN', 'ROS_STREAM'].includes(frame?.provenance);
 
 function box(parent, x, y, z, width, height, depth, material) {
   const mesh = new THREE.Mesh(boxGeometry, material);
@@ -376,7 +377,7 @@ export function createScene(host, labels, environment, profiles) {
     const center = lastPose ?? new THREE.Vector3(-3.8, 0, 0);
     if (mode === 'occupancy' || mode === 'bird') {
       const map = frame?.occupancy;
-      const recorded = hasRecordedMap(frame);
+      const recorded = hasMap(frame);
       const bounds = environment?.bounds ?? [-10, -10, 10, 10];
       const yaw = map?.yaw ?? 0;
       const halfWidth = (map?.width ?? 0) * (map?.resolution ?? 0) / 2;
@@ -389,7 +390,7 @@ export function createScene(host, labels, environment, profiles) {
     } else if (mode === 'cloud' || mode === 'debug') {
       controls.target.copy(center).add(new THREE.Vector3(4.2, 0.42, -0.1));
       camera.position.copy(center).add(new THREE.Vector3(-6.4, 7.0, 5.4));
-    } else if (frame?.provenance === 'NAV2_PLAN') {
+    } else if (hasNav2(frame) && frame.nav.planned.length) {
       const last = world(frame.nav.planned.at(-1));
       const bearing = last.clone().sub(center).setY(0).normalize();
       const side = new THREE.Vector3(-bearing.z, 0, bearing.x);
@@ -409,7 +410,7 @@ export function createScene(host, labels, environment, profiles) {
     const cosine = Math.cos(yaw);
     const sine = Math.sin(yaw);
     const scale = new THREE.Vector3(resolution * 0.97, 0.008, resolution * 0.97);
-    const palette = frame.provenance === 'NAV2_PLAN' ? planMapColors : occupancyColors;
+    const palette = hasNav2(frame) ? planMapColors : occupancyColors;
     grid.count = Math.min(cells.length, 4096);
     for (let i = 0; i < grid.count; i++) {
       const x = (i % width + 0.5) * resolution;
@@ -423,7 +424,7 @@ export function createScene(host, labels, environment, profiles) {
   }
 
   function updateMode() {
-    const recorded = hasRecordedMap(frame);
+    const recorded = hasMap(frame);
     backdrop.visible = !recorded;
     racks.visible = mode !== 'occupancy' && mode !== 'cloud' && mode !== 'semantic';
     walls.visible = mode === 'follow';
@@ -451,10 +452,10 @@ export function createScene(host, labels, environment, profiles) {
   function update(snapshot) {
     frame = snapshot;
     const { pose, steering } = frame.robot;
-    const recorded = hasRecordedMap(frame);
-    const nav2 = frame.provenance === 'NAV2_PLAN';
+    const recorded = hasMap(frame);
+    const nav2 = hasNav2(frame);
     const position = pose && world([pose.x, pose.y, 0]);
-    if (currentSession !== frame.session) {
+    if (currentSession !== frame.session || (position && !lastPose)) {
       currentSession = frame.session;
       for (const id of tracks.keys()) removeTrack(id);
       lastPose = position;

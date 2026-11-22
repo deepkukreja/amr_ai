@@ -51,6 +51,7 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
   background: #faf0e6;
 }
 .mode-badge[data-mode="replay"] { color: var(--accent); background: var(--accent-soft); border-color: #a4b4c0; }
+.mode-badge[data-mode="live"] { color: #225b46; background: #e8f2ee; border-color: #9bbdac; }
 .small-dot { display: inline-block; width: 6px; height: 6px; flex: 0 0 auto; border-radius: 50%; background: currentColor; }
 
 main { width: 100%; padding: 0 22px; max-width: 1980px; margin: auto; }
@@ -127,6 +128,7 @@ h2 { font-size: 15px; margin: 0; line-height: 1.2; font-weight: 680; letter-spac
 .legend .predicted { border-top: 2px dashed #e7f0fa; }
 .legend .history { border-color: #5aa5bd; }
 .legend .plan-ribbon { height: 5px; border: 0; border-radius: 2px; background: #32ddcf; }
+.legend .lidar-returns { border-top: 3px dotted #5be8ff; }
 .legend .legend-square { border: 0; width: 13px; height: 10px; border-radius: 1px; }
 .legend .free { background: #286b78; }
 .legend .occupied { background: #c47842; }
@@ -145,6 +147,18 @@ h2 { font-size: 15px; margin: 0; line-height: 1.2; font-weight: 680; letter-spac
 .camera-tools .icon-button:hover { background: #21384c; }
 .scene-info, .viewport-warning, .viewport-message { padding: 7px 9px; font-size: 11px; line-height: 1.5; }
 .scene-info { left: 13px; top: 13px; color: #b5deee; }
+.camera-preview { position: absolute; color: #edf6fa; background: #0c1724; border: 1px solid #405774; border-radius: var(--radius); }
+.camera-inset { top: 12px; right: 12px; width: clamp(180px, 31%, 300px); }
+.camera-expanded { width: min(92%, 720px, calc((100vh - 365px) * 1.65)); top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.camera-preview-title { display: flex; justify-content: space-between; align-items: center; gap: 5px; padding: 7px; font-size: 11px; }
+.camera-preview-title button { padding: 0; border: 0; background: transparent; color: #c9ecfa; text-decoration: underline; }
+.camera-preview-title button:focus-visible { outline-color: var(--cyan); }
+.camera-registration { color: #a8c6d1; font: 9px var(--mono); text-align: right; }
+.camera-picture { position: relative; }
+.camera-picture img, .camera-picture canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.camera-picture canvas { pointer-events: none; }
+.viewport[data-camera="true"] .canvas-host, .viewport[data-camera="true"] .scene-labels, .viewport[data-camera="true"] .legend,
+.viewport[data-camera="true"] .camera-tools { visibility: hidden; }
 .viewport-warning { right: 13px; top: 13px; color: #ffd1a4; border-color: #805737; display: flex; align-items: center; gap: 6px; max-width: 60%; }
 .viewport-warning svg { flex: 0 0 auto; }
 .viewport-message { top: 45%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: min(320px, 88%); z-index: 3; color: #f4dfc7; }
@@ -248,6 +262,8 @@ progress::-moz-progress-bar { background: var(--accent); }
   .camera-tools { right: 7px; bottom: 7px; }
   .viewport-warning { top: 7px; right: 7px; font-size: 10px; }
   .scene-info { left: 7px; top: 7px; font-size: 10px; }
+  .camera-inset { right: 7px; top: 7px; width: 161px; }
+  .camera-expanded { width: 93%; }
   .viewport-footer { padding-inline: 7px; }
 }
 @media (max-width: 480px) {

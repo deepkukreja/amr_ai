@@ -9,6 +9,7 @@ import { scenarios, createSimulation, buildRecording, intervalMs } from './simul
 import { environments, robotProfiles } from './environments.mjs';
 import { loadRouteRecording, recordedRoute } from './route-replay.mjs';
 import { loadNav2Plan, nav2Plan } from './nav2-plan.mjs';
+import { rosSnapshotReader, rosWorld } from './ros-stream.mjs';
 
 const files = fileURLToPath(new URL('../dist/', import.meta.url));
 const mime = {
@@ -21,7 +22,7 @@ function json(response, status, data) {
   response.end(JSON.stringify(data));
 }
 
-export function createBridge() {
+export function createBridge({ rosFile = process.env.RBW_ROS_WORLD_FILE } = {}) {
   let clients = 0;
   const capturedRoute = loadRouteRecording().catch(error => {
     if (error.code !== 'ENOENT') console.warn('Recorded route unavailable:', error.message);
@@ -43,6 +44,7 @@ export function createBridge() {
       const available = [...scenarios];
       if (playback) available.push(recordedRoute);
       if (plan) available.push({ ...nav2Plan, siteName: plan.frames[0].site });
+      if (rosFile) available.push(rosWorld);
       return json(response, 200, {
         version: 1, scenarios: available, environments, robotProfiles, intervalMs,
       });
@@ -52,7 +54,8 @@ export function createBridge() {
       const replay = uri.pathname.endsWith('/replay');
       const isRecorded = replay && scenario === recordedRoute.id;
       const isPlan = replay && scenario === nav2Plan.id;
-      if (!isRecorded && !isPlan && !scenarios.some(item => item.id === scenario)) return json(response, 400, { error: 'Unknown scenario' });
+      const isRos = !replay && scenario === rosWorld.id && Boolean(rosFile);
+      if (!isRecorded && !isPlan && !isRos && !scenarios.some(item => item.id === scenario)) return json(response, 400, { error: 'Unknown scenario' });
       if (replay) {
         const recording = isPlan ? await capturedPlan : isRecorded ? await capturedRoute : buildRecording(scenario);
         if (!recording) return json(response, 404, { error: 'Recording unavailable' });
@@ -64,16 +67,24 @@ export function createBridge() {
       }
       if (clients >= 12) return json(response, 503, { error: 'Stream capacity reached' });
       clients++;
-      const simulation = createSimulation(scenario, randomUUID());
+      const next = isRos ? rosSnapshotReader(rosFile) : createSimulation(scenario, randomUUID()).next;
       response.writeHead(200, {
         'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store', 'X-Accel-Buffering': 'no',
       });
       let writable = true;
       let blockedSince = 0;
+      let reading = false;
+      let closed = false;
       response.on('drain', () => { writable = true; });
-      const tick = () => {
-        const snapshot = simulation.next();
+      if (isRos) response.flushHeaders();
+      const tick = async () => {
+        if (reading) return;
+        reading = true;
+        const snapshot = await next();
+        reading = false;
+        if (closed) return;
         if (writable) {
+          if (!snapshot) return;
           writable = response.write(`event: world\ndata: ${JSON.stringify(snapshot)}\n\n`);
           if (!writable) blockedSince = performance.now();
         } else if (performance.now() - blockedSince > 5000) {
@@ -81,8 +92,8 @@ export function createBridge() {
         }
       };
       tick();
-      const timer = setInterval(tick, intervalMs);
-      response.on('close', () => { clearInterval(timer); clients--; });
+      const timer = setInterval(tick, isRos ? 200 : intervalMs);
+      response.on('close', () => { closed = true; clearInterval(timer); clients--; });
       return;
     }
     const asset = uri.pathname === '/' ? 'index.html' : /^\/assets\/[\w.-]+$/.test(uri.pathname) ? uri.pathname.slice(1) : null;
