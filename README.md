@@ -20,6 +20,7 @@ Run `.venv/bin/python scripts/laptop_demo.py` in the local WSL checkout, then op
 
 ## Start here
 
+- **[Field capture and annotation intake](docs/field_capture_intake.md):** prepare actual AMR-camera frames and protect the holdout split.
 - **[Broad detection baseline v1](docs/broad_detection_baseline_v1.md):** frozen benchmark, class-level results, and first data priorities.
 - **[Object detection roadmap](docs/broad_object_detection_roadmap.md):** class priorities, baseline comparison, data collection, training, and robot verification for vehicles, riders, people, warehouse equipment, and animals.
 - **[Dataset guide](datasets/README.md):** what the dataset folders mean, which files are tracked, how to prepare local data, and important class/split cautions.

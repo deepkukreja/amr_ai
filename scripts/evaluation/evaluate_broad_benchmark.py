@@ -27,15 +27,36 @@ WAREHOUSE = {
 MAPPINGS = {"general": COCO, "reference": ROAD, "candidate": ROAD, "warehouse": WAREHOUSE}
 
 
-def load_frames(manifest):
+def field_scoring_frame(frame):
+    coverage = set(frame["coverage"])
+    boxes = list(frame["boxes"])
+    aliases = {
+        "human": {"pedestrian", "rider"},
+        "forklift_or_truck": {"forklift", "truck"},
+        "cart_or_pallet_jack": {"cart", "pallet_jack"},
+    }
+    for alias, labels in aliases.items():
+        if labels <= coverage:
+            coverage.add(alias)
+            boxes.extend({**obj, "label": alias} for obj in frame["boxes"] if obj["label"] in labels)
+    return {**frame, "cohort": "field_" + frame["scene"], "coverage": sorted(coverage), "boxes": boxes}
+
+
+def load_frames(manifest, allow_field_holdout=False):
     data = json.loads(manifest.read_bytes())
-    if data["version"] != 1 or data["scope"] != "development only":
+    scope = data["scope"]
+    if data["version"] != 1 or scope not in {"development only", "field development", "field holdout"}:
         raise ValueError("Unexpected benchmark format or split")
+    if scope == "field holdout" and not allow_field_holdout:
+        raise ValueError("Field holdout requires explicit --allow-field-holdout evaluation")
+    field = scope.startswith("field ")
+    base = manifest.resolve().parent if field else ROOT
+    allowed = base if field else ROOT / "datasets"
     frames = {}
     seen = set()
     for frame in data["frames"]:
-        source = (ROOT / frame["image"]).resolve()
-        if not source.is_relative_to(ROOT / "datasets"):
+        source = (base / frame["image"]).resolve()
+        if not source.is_relative_to(allowed):
             raise ValueError("Benchmark image is outside the dataset directory")
         digest = hashlib.sha256(source.read_bytes()).hexdigest()
         if digest != frame["sha256"] or digest in seen:
@@ -45,7 +66,7 @@ def load_frames(manifest):
             _box(obj["box"])
             if obj["label"] not in frame["coverage"]:
                 raise ValueError("Truth includes an unscored label")
-        frames[str(source)] = frame
+        frames[str(source)] = field_scoring_frame(frame) if field else frame
     if not frames:
         raise ValueError("Benchmark has no inputs")
     return frames
@@ -61,10 +82,11 @@ def main():
     parser.add_argument("--manifest", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--device", choices=["0", "cpu"], default="0")
+    parser.add_argument("--allow-field-holdout", action="store_true")
     args = parser.parse_args()
     if args.output.exists():
         raise ValueError("Refuse to replace an existing evaluation report")
-    frames = load_frames(args.manifest)
+    frames = load_frames(args.manifest, args.allow_field_holdout)
     os.environ.pop("ULTRALYTICS_API_KEY", None)
     os.environ.update(YOLO_OFFLINE="true", YOLO_AUTOINSTALL="false", WANDB_MODE="disabled")
     import torch
@@ -79,6 +101,7 @@ def main():
     device = 0 if args.device == "0" else "cpu"
     report = {
         "manifest_sha256": hashlib.sha256(args.manifest.read_bytes()).hexdigest(),
+        "manifest_scope": json.loads(args.manifest.read_bytes())["scope"],
         "evaluator_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         "scorer_sha256": hashlib.sha256(Path(__file__).with_name("broad_benchmark.py").read_bytes()).hexdigest(),
         "data": dict(Counter(frame["cohort"] for frame in frames.values())),
@@ -141,8 +164,8 @@ def main():
                 label: cohort_metrics(rows, supported & {"human", "pedestrian", "rider"}, .25)
                 for label, rows in road_by_density.items()
             },
-            "wall_ms_p50": duration[math.ceil(.5 * len(duration)) - 1],
-            "wall_ms_p95": duration[math.ceil(.95 * len(duration)) - 1],
+            "wall_ms_p50": duration[math.ceil(.5 * len(duration)) - 1] if duration else None,
+            "wall_ms_p95": duration[math.ceil(.95 * len(duration)) - 1] if duration else None,
         }
         print(f"{key}: scored {len(frames)} images", flush=True)
         del model
