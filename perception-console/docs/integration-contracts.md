@@ -13,6 +13,8 @@ Source adapters supply acquisition time and provenance independently of receipt 
 | Health and events | Sensor ID, frame, nominal rate, last source stamp, age and status. Warnings have stable codes and simulation timeline markers. A disconnected browser ages the transport independently. |
 | Replay | A versioned ordered frame collection with source provenance, sample interval, duration and timeline events. The browser changes presentation mode to REPLAY while retaining SIMULATION or GAZEBO as the recorded source. |
 
+Single Nav2 planning captures also use replay presentation. They retain the ROS map/pose/path frame and source stamp, have no timeline, and omit motion or sensor telemetry. See the [Nav2 capture contract and fixture](nav2-plan-view.md).
+
 ## Upstream topic and model boundaries
 
 Topic profiles are launch-specific and remappable. The targets below are starting budgets in steady operation. Verify each rate, frame, QoS and topic publisher from the actual graph before adopting a profile.

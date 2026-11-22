@@ -6,6 +6,8 @@ import {
   Video, Waypoints,
 } from 'lucide-react';
 import { createScene } from './scene.js';
+import wordmark from './wordmark.webp';
+import '../../design/robot-buildworks-theme.css';
 import './style.css';
 
 const views = [
@@ -13,6 +15,7 @@ const views = [
   ['semantic', 'Semantic'], ['occupancy', 'Occupancy'], ['debug', 'Debug'],
 ];
 const radToDeg = radians => radians * 180 / Math.PI;
+const hasCapturedMap = frame => ['GAZEBO', 'NAV2_PLAN'].includes(frame?.provenance);
 const clock = (milliseconds = 0) => {
   const seconds = milliseconds / 1000;
   return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${(seconds % 60).toFixed(1).padStart(4, '0')}`;
@@ -68,8 +71,7 @@ function useScenario(config, scenario, replayMode) {
 
 function Logo() {
   return <div className="brand">
-    <span className="brandmark" aria-hidden="true"><span /><span /></span>
-    <span className="brand-name">ROBOT BUILDWORKS</span>
+    <img className="brand-wordmark" src={wordmark} alt="Robot Buildworks" />
     <span className="brand-context">Perception console</span>
   </div>;
 }
@@ -107,9 +109,10 @@ function WorldView({ profiles, environment, snapshot, view, setView, selected, t
 
   const obstacle = snapshot?.events[0];
   const showCloud = view === 'cloud' || view === 'debug';
-  const captured = snapshot?.provenance === 'GAZEBO';
+  const captured = hasCapturedMap(snapshot);
+  const nav2 = snapshot?.provenance === 'NAV2_PLAN';
   const pose = snapshot?.robot.pose;
-  return <section className="panel world-panel" aria-label="World view">
+  return <section className="panel world-panel" aria-label="World view" data-plan={nav2}>
     <div className="panel-header world-header">
       <h2>World view</h2>
       <label className="view-control"><span>View</span>
@@ -136,7 +139,8 @@ function WorldView({ profiles, environment, snapshot, view, setView, selected, t
           <span><i className="legend-square free" /> Observed free</span>
           <span><i className="legend-square occupied" /> Occupied</span>
           <span><i className="legend-square unknown" /> Unknown</span>
-          {captured && <span><i className="history" /> Gazebo truth history</span>}
+          {nav2 && <span><i className="plan-ribbon" /> Nav2 planned path</span>}
+          {snapshot?.provenance === 'GAZEBO' && <span><i className="history" /> Gazebo truth history</span>}
         </> : <>
           <span><i className="planned" /> Planned route</span>
           <span><i className="local" /> Local trajectory</span>
@@ -156,7 +160,8 @@ function WorldView({ profiles, environment, snapshot, view, setView, selected, t
     </div>
     <div className="viewport-footer mono">
       <span><span className={transport === 'ready' ? 'small-dot' : 'small-dot stale'} />{
-        transport === 'ready' ? captured ? 'Gazebo capture loaded' : 'World stream ready' : transport === 'offline' ? 'Bridge disconnected' : 'Connecting'
+        transport === 'ready' ? nav2 ? 'Nav2 plan loaded' : captured ? 'Gazebo capture loaded' : 'World stream ready'
+          : transport === 'offline' ? 'Bridge disconnected' : 'Connecting'
       }</span>
       <span>{snapshot?.frame ?? 'Frame unavailable'}{snapshot ? `  /  #${String(snapshot.sequence).padStart(3, '0')}` : ''}</span>
       <span>Drag to orbit · Scroll to zoom</span>
@@ -175,7 +180,7 @@ function RobotStatus({ frame }) {
       <div><dt><MapPin /> Localization</dt><dd className={robot?.localization.status === 'uncertain' ? 'warning-text' : 'data-text'}>
         {robot?.localization.varianceM2 != null ? <><span className="capitalized">{robot.localization.status}</span> <small>{robot.localization.varianceM2.toFixed(3)} m²</small></> : '—'}
       </dd></div>
-      <div><dt><Waypoints /> Navigation</dt><dd className={frame && frame.nav.state !== 'En route' ? 'warning-text' : ''}>{frame?.nav.state ?? '—'}</dd></div>
+      <div><dt><Waypoints /> Navigation</dt><dd className={frame?.events.length ? 'warning-text' : ''}>{frame?.nav.state ?? '—'}</dd></div>
       <div><dt><MapPin /> Destination</dt><dd>{frame?.nav.destination ?? '—'}</dd></div>
     </dl>
   </section>;
@@ -199,7 +204,7 @@ function TrackList({ frame, selected, setSelected }) {
         })}</tbody>
       </table>
       {tracks.length === 0 && <p className="empty">{
-        frame?.provenance === 'GAZEBO' ? 'Tracks are unavailable in this capture' : frame ? 'No tracks in this frame' : 'Awaiting world data'
+        hasCapturedMap(frame) ? 'Tracks are unavailable in this capture' : frame ? 'No tracks in this frame' : 'Awaiting world data'
       }</p>}
       {selected && tracks.some(track => track.id === selected) && (() => {
         const track = tracks.find(item => item.id === selected);
@@ -228,7 +233,7 @@ function Diagnostics({ frame, transport }) {
           </dd></div>;
         })}
       </dl>
-      {!sensors.length && <p className="empty">{frame?.provenance === 'GAZEBO' ? 'Sensor health unavailable in this capture' : 'Awaiting sensor observations'}</p>}
+      {!sensors.length && <p className="empty">{hasCapturedMap(frame) ? 'Sensor health unavailable in this capture' : 'Awaiting sensor observations'}</p>}
     </section>
   </>;
 }
@@ -250,7 +255,7 @@ function Inspector({ frame, selected, setSelected, transport }) {
         {frame?.events.map(event => <p className="warning-line" key={event.code}>
           <TriangleAlert size={16} /> <span>{event.label}</span>
         </p>)}
-        {frame?.events.length === 0 && <p className="empty">{frame.provenance === 'GAZEBO' ? 'Unavailable in this capture' : 'No active warnings'}</p>}
+        {frame?.events.length === 0 && <p className="empty">{hasCapturedMap(frame) ? 'Unavailable in this capture' : 'No active warnings'}</p>}
         {!frame && <p className="empty">Awaiting diagnostics</p>}
       </section>
     </>}
@@ -303,13 +308,24 @@ function App() {
   const snapshot = replay ? replayFrame || null : active?.scenario === scenario ? active : null;
   const option = config?.scenarios.find(item => item.id === scenario);
   const captured = option?.replayOnly;
+  const snapshotOnly = option?.snapshotOnly;
   const environment = config?.environments[option?.site];
   const ready = state === 'ready';
   const transport = setupError ? 'offline' : state;
 
   useEffect(() => {
     const controller = new AbortController();
-    api('config', controller.signal).then(setConfig).catch(error => {
+    api('config', controller.signal).then(settings => {
+      const requested = new URLSearchParams(location.search).get('source');
+      const initial = settings.scenarios.find(item => item.id === requested);
+      if (initial) {
+        setScenario(initial.id);
+        setReplay(Boolean(initial.replayOnly));
+        setPlaying(!initial.replayOnly);
+        setView(initial.replayOnly && !initial.snapshotOnly ? 'occupancy' : 'follow');
+      }
+      setConfig(settings);
+    }).catch(error => {
       if (error.name !== 'AbortError') setSetupError(error.message);
     });
     return () => controller.abort();
@@ -350,8 +366,8 @@ function App() {
     <main>
       <div className="page-head">
         <div><h1>Environment</h1>
-          <p className="mono"><span>{captured ? 'Small warehouse' : environment?.name ?? 'Waiting for source'}</span>
-            <b>/</b>{captured ? 'Gazebo route capture' : environment?.zone ?? 'Perception workspace'}</p>
+          <p className="mono"><span>{captured ? option.siteName ?? 'Small warehouse' : environment?.name ?? 'Waiting for source'}</span>
+            <b>/</b>{snapshotOnly ? 'Nav2 plan capture' : captured ? 'Gazebo route capture' : environment?.zone ?? 'Perception workspace'}</p>
         </div>
         <div className="source-controls">
           <label className="scenario-label" htmlFor="scenario">Source</label>
@@ -360,7 +376,7 @@ function App() {
             const mode = next.replayOnly || replay;
             setScenario(next.id);
             setReplay(mode);
-            if (next.replayOnly) setView('occupancy');
+            if (next.replayOnly) setView(next.snapshotOnly ? 'follow' : 'occupancy');
             resetTimeline(mode);
           }}>
             {!config && <option>Loading…</option>}
@@ -386,10 +402,11 @@ function App() {
           view={view} setView={setView} selected={selected} transport={transport} />
         <Inspector frame={snapshot} selected={selected} setSelected={setSelected} transport={transport} />
       </div>
-      <Timeline recording={recording} snapshot={snapshot} replay={replay} ready={ready} playing={playing}
-        setPlaying={togglePlay} cursor={cursor} setCursor={setCursor} speed={speed} setSpeed={setSpeed} />
+      {!snapshotOnly && <Timeline recording={recording} snapshot={snapshot} replay={replay} ready={ready} playing={playing}
+        setPlaying={togglePlay} cursor={cursor} setCursor={setCursor} speed={speed} setSpeed={setSpeed} />}
       <footer className="footer mono"><span>World contract v1</span><span>Source · {
-        captured ? 'Gazebo truth and wheel odometry' : replay ? 'recorded scenario' : 'scenario simulation'
+        snapshotOnly ? snapshot?.source === 'ROS_CAPTURE' ? 'Recorded ROS map, pose and path' : 'Nav2 planner-only fixture'
+          : captured ? 'Gazebo truth and wheel odometry' : replay ? 'recorded scenario' : 'scenario simulation'
       }</span></footer>
     </main>
   </>;

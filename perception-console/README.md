@@ -27,5 +27,6 @@ The route replay entry appears only when the local route evidence is present. Th
 - [Integration contracts and ROS topics](docs/integration-contracts.md)
 - [Indoor/outdoor operator-view research](docs/operator-view-research.md)
 - [Development status and acceptance gaps](docs/development-status.md)
+- [Recorded Nav2 plan view and ROS capture](docs/nav2-plan-view.md)
 
 Simulation provides generated sensor observations and scripted scenario events. The console currently supports simulation and replay. A live ROS/robot source, camera video and physical control require separate integration and validation.

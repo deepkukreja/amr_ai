@@ -8,9 +8,13 @@ import { gzipSync } from 'node:zlib';
 import { scenarios, createSimulation, buildRecording, intervalMs } from './simulation.mjs';
 import { environments, robotProfiles } from './environments.mjs';
 import { loadRouteRecording, recordedRoute } from './route-replay.mjs';
+import { loadNav2Plan, nav2Plan } from './nav2-plan.mjs';
 
 const files = fileURLToPath(new URL('../dist/', import.meta.url));
-const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
+const mime = {
+  '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
+  '.webp': 'image/webp',
+};
 
 function json(response, status, data) {
   response.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -23,6 +27,10 @@ export function createBridge() {
     if (error.code !== 'ENOENT') console.warn('Recorded route unavailable:', error.message);
     return null;
   });
+  const capturedPlan = loadNav2Plan().catch(error => {
+    if (error.code !== 'ENOENT') console.warn('Nav2 plan unavailable:', error.message);
+    return null;
+  });
   return createServer(async (request, response) => {
     response.setHeader('X-Content-Type-Options', 'nosniff');
     if (!/^(?:localhost|127\.0\.0\.1)(?::\d+)?$/i.test(request.headers.host ?? '')) {
@@ -31,17 +39,22 @@ export function createBridge() {
     if (request.method !== 'GET') return json(response, 405, { error: 'Read-only bridge' });
     const uri = new URL(request.url, 'http://127.0.0.1');
     if (uri.pathname === '/api/v1/config') {
-      const playback = await capturedRoute;
+      const [playback, plan] = await Promise.all([capturedRoute, capturedPlan]);
+      const available = [...scenarios];
+      if (playback) available.push(recordedRoute);
+      if (plan) available.push({ ...nav2Plan, siteName: plan.frames[0].site });
       return json(response, 200, {
-        version: 1, scenarios: playback ? [...scenarios, recordedRoute] : scenarios, environments, robotProfiles, intervalMs,
+        version: 1, scenarios: available, environments, robotProfiles, intervalMs,
       });
     }
     if (uri.pathname === '/api/v1/replay' || uri.pathname === '/api/v1/world') {
       const scenario = uri.searchParams.get('scenario') ?? scenarios[0].id;
-      const isRecorded = scenario === recordedRoute.id && uri.pathname.endsWith('/replay');
-      if (!isRecorded && !scenarios.some(item => item.id === scenario)) return json(response, 400, { error: 'Unknown scenario' });
-      if (uri.pathname.endsWith('/replay')) {
-        const recording = isRecorded ? await capturedRoute : buildRecording(scenario);
+      const replay = uri.pathname.endsWith('/replay');
+      const isRecorded = replay && scenario === recordedRoute.id;
+      const isPlan = replay && scenario === nav2Plan.id;
+      if (!isRecorded && !isPlan && !scenarios.some(item => item.id === scenario)) return json(response, 400, { error: 'Unknown scenario' });
+      if (replay) {
+        const recording = isPlan ? await capturedPlan : isRecorded ? await capturedRoute : buildRecording(scenario);
         if (!recording) return json(response, 404, { error: 'Recording unavailable' });
         if (request.headers['accept-encoding']?.includes('gzip')) {
           response.writeHead(200, { 'Content-Type': 'application/json', 'Content-Encoding': 'gzip', 'Cache-Control': 'no-store' });

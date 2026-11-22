@@ -6,6 +6,7 @@ const standard = (color, roughness = 0.73, metalness = 0.14) => new THREE.MeshSt
 const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 const wheelGeometry = new THREE.CylinderGeometry(1, 1, 1, 24);
 const colors = { rack: '#466385', beam: '#b16a3d', steel: '#6b8090', pallet: '#8e7356', cyan: '#41dcf7', amber: '#ffad56' };
+const hasRecordedMap = frame => ['GAZEBO', 'NAV2_PLAN'].includes(frame?.provenance);
 
 function box(parent, x, y, z, width, height, depth, material) {
   const mesh = new THREE.Mesh(boxGeometry, material);
@@ -119,6 +120,7 @@ function makeRobot(geometry) {
   const rubber = standard('#171d26', 0.94, 0);
   const rims = standard('#738797', 0.39, 0.62);
   const orange = standard('#f08035', 0.47, 0.22);
+  const ivory = standard('#e0e5e4', 0.49, 0.17);
   const deck = standard('#273d50', 0.55, 0.36);
   const black = standard('#142332');
   const light = new THREE.MeshBasicMaterial({ color: '#ffd0a0' });
@@ -134,23 +136,31 @@ function makeRobot(geometry) {
   outline.lineTo(-0.23, 0.34);
   outline.closePath();
   const body = new THREE.Mesh(new THREE.ExtrudeGeometry(outline, {
-    depth: 0.20, bevelEnabled: true, bevelSize: 0.034, bevelThickness: 0.028, bevelSegments: 2, steps: 1,
-  }), orange);
+    depth: 0.17, bevelEnabled: true, bevelSize: 0.024, bevelThickness: 0.021, bevelSegments: 2, steps: 1,
+  }), ivory);
   body.rotation.x = -Math.PI / 2;
-  body.position.y = 0.24;
+  body.position.y = 0.195;
   group.add(body);
-  box(group, 0.14, 0.474, 0, 0.69, 0.047, 0.52, deck);
-  box(group, -0.261, 0.343, 0, 0.027, 0.135, 0.45, black);
+  box(group, 0.13, 0.373, 0, 0.71, 0.035, 0.60, deck);
+  box(group, -0.236, 0.392, 0, 0.063, 0.125, 0.65, orange);
+  box(group, -0.266, 0.247, 0, 0.026, 0.064, 0.46, black);
+  box(group, 0.69, 0.48, 0, 0.29, 0.33, 0.48, ivory);
+  box(group, 0.70, 0.749, 0, 0.21, 0.22, 0.36, orange);
+  box(group, 0.707, 0.867, 0, 0.268, 0.033, 0.435, ivory);
+  box(group, 0.812, 0.777, 0, 0.017, 0.057, 0.344, black);
+  box(group, 0.895, 0.277, 0, 0.037, 0.053, 0.49, black);
   for (const side of [-1, 1]) {
-    box(group, -0.271, 0.348, side * 0.283, 0.021, 0.039, 0.095, light);
-    box(group, 0.77, 0.39, side * 0.149, 0.15, 0.025, 0.025, rimLight);
+    box(group, 0.112, 0.392, side * 0.324, 0.717, 0.128, 0.04, orange);
+    box(group, 0.112, 0.456, side * 0.324, 0.717, 0.022, 0.043, black);
+    box(group, -0.27, 0.29, side * 0.27, 0.02, 0.029, 0.074, light);
+    box(group, 0.827, 0.777, side * 0.115, 0.016, 0.042, 0.075, rimLight);
   }
-  const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.105, 0.12, 0.115, 24), black);
-  mast.position.set(0.48, 0.525, 0);
+  const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.074, 0.096, 24), black);
+  mast.position.set(0.68, 0.929, 0);
   group.add(mast);
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.105, 0.009, 6, 26), rimLight);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.063, 0.005, 6, 26), rimLight);
   ring.rotation.x = Math.PI / 2;
-  ring.position.set(0.48, 0.547, 0);
+  ring.position.set(0.68, 0.94, 0);
   group.add(ring);
   const front = new THREE.Group();
   front.position.set(wheelbase, tireRadius, 0);
@@ -246,6 +256,30 @@ function updateRoute(object, coordinates, elevation) {
   object.visible = coordinates.length > 1;
 }
 
+function updateRibbon(object, points) {
+  const vertices = [];
+  const indices = [];
+  points.forEach(([x, y], index) => {
+    const a = points[Math.max(0, index - 1)];
+    const b = points[Math.min(index + 1, points.length - 1)];
+    const dx = b[0] - a[0];
+    const dy = b[1] - a[1];
+    const length = Math.hypot(dx, dy) || 1;
+    const halfWidth = (index === 0 ? 0.12 : 0.28) / length;
+    vertices.push(x - dy * halfWidth, 0.048, -y - dx * halfWidth,
+      x + dy * halfWidth, 0.048, -y + dx * halfWidth);
+    if (index) {
+      const i = index * 2;
+      indices.push(i - 2, i - 1, i, i - 1, i + 1, i);
+    }
+  });
+  object.geometry.dispose();
+  object.geometry = new THREE.BufferGeometry();
+  object.geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+  object.geometry.setIndex(indices);
+  object.visible = points.length > 1;
+}
+
 function dotTexture() {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = 32;
@@ -302,6 +336,13 @@ export function createScene(host, labels, environment, profiles) {
   const planned = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({
     color: '#49dfff', map: dot, alphaTest: 0.4, size: 0.17,
   }));
+  const routeRibbon = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({
+    color: '#32ddcf', side: THREE.DoubleSide, transparent: true, opacity: 0.52, depthWrite: false, toneMapped: false,
+  }));
+  routeRibbon.visible = false;
+  routeRibbon.renderOrder = 2;
+  const planCenter = route('#d0fcff', false);
+  planCenter.renderOrder = 3;
   const local = route('#6ce8fd', false);
   const history = route('#5aa5bd', false);
   const prediction = route('#e7f0fa', true);
@@ -312,7 +353,7 @@ export function createScene(host, labels, environment, profiles) {
   const grid = new THREE.InstancedMesh(boxGeometry, new THREE.MeshBasicMaterial({ vertexColors: false, transparent: true, opacity: 0.86 }), 4096);
   grid.frustumCulled = false;
   grid.count = 0;
-  scene.add(planned, local, history, prediction, heading, cloud, grid);
+  scene.add(planned, routeRibbon, planCenter, local, history, prediction, heading, cloud, grid);
   const camera = new THREE.PerspectiveCamera(53, 1, 0.055, 100);
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
@@ -328,21 +369,32 @@ export function createScene(host, labels, environment, profiles) {
   let renderedOccupancy;
   const tracks = new Map();
   const occupancyColors = { '-1': new THREE.Color('#202d45'), 0: new THREE.Color('#286b78'), 100: new THREE.Color('#c47842') };
+  const planMapColors = { '-1': new THREE.Color('#202933'), 0: new THREE.Color('#465563'), 100: new THREE.Color('#8b7c6d') };
   const matrix = new THREE.Matrix4();
 
   function reset() {
     const center = lastPose ?? new THREE.Vector3(-3.8, 0, 0);
     if (mode === 'occupancy' || mode === 'bird') {
       const map = frame?.occupancy;
-      const recorded = frame?.provenance === 'GAZEBO';
+      const recorded = hasRecordedMap(frame);
       const bounds = environment?.bounds ?? [-10, -10, 10, 10];
-      const x = recorded ? map.origin[0] + map.width * map.resolution / 2 : (bounds[0] + bounds[2]) / 2;
-      const z = recorded ? -map.origin[1] - map.height * map.resolution / 2 : -(bounds[1] + bounds[3]) / 2;
+      const yaw = map?.yaw ?? 0;
+      const halfWidth = (map?.width ?? 0) * (map?.resolution ?? 0) / 2;
+      const halfHeight = (map?.height ?? 0) * (map?.resolution ?? 0) / 2;
+      const x = recorded ? map.origin[0] + halfWidth * Math.cos(yaw) - halfHeight * Math.sin(yaw) : (bounds[0] + bounds[2]) / 2;
+      const z = recorded ? -map.origin[1] - halfWidth * Math.sin(yaw) - halfHeight * Math.cos(yaw) : -(bounds[1] + bounds[3]) / 2;
       controls.target.set(x, 0, z);
-      camera.position.set(x + (mode === 'occupancy' ? -0.01 : -10.2), 25, z + (mode === 'occupancy' ? 0.02 : 11.8));
+      const overhead = recorded ? Math.max(9, 1.45 * Math.max(halfWidth, halfHeight) * 2) : 25;
+      camera.position.set(x + (mode === 'occupancy' ? 0 : -10.2), overhead, z + (mode === 'occupancy' ? 0.02 : 11.8));
     } else if (mode === 'cloud' || mode === 'debug') {
       controls.target.copy(center).add(new THREE.Vector3(4.2, 0.42, -0.1));
       camera.position.copy(center).add(new THREE.Vector3(-6.4, 7.0, 5.4));
+    } else if (frame?.provenance === 'NAV2_PLAN') {
+      const last = world(frame.nav.planned.at(-1));
+      const bearing = last.clone().sub(center).setY(0).normalize();
+      const side = new THREE.Vector3(-bearing.z, 0, bearing.x);
+      controls.target.copy(center).lerp(last, 0.36).setY(0.18);
+      camera.position.copy(center).addScaledVector(bearing, -3.0).addScaledVector(side, 1.85).setY(3.6);
     } else {
       controls.target.copy(center).add(new THREE.Vector3(3.4, 0.52, -0.28));
       camera.position.copy(center).add(new THREE.Vector3(-3.65, 2.52, 1.06));
@@ -353,21 +405,25 @@ export function createScene(host, labels, environment, profiles) {
   function updateOccupancy(occupancy) {
     if (renderedOccupancy === occupancy) return;
     renderedOccupancy = occupancy;
-    const { cells, width, resolution, origin } = occupancy;
+    const { cells, width, resolution, origin, yaw = 0 } = occupancy;
+    const cosine = Math.cos(yaw);
+    const sine = Math.sin(yaw);
+    const scale = new THREE.Vector3(resolution * 0.97, 0.008, resolution * 0.97);
+    const palette = frame.provenance === 'NAV2_PLAN' ? planMapColors : occupancyColors;
     grid.count = Math.min(cells.length, 4096);
     for (let i = 0; i < grid.count; i++) {
-      const x = origin[0] + (i % width + 0.5) * resolution;
-      const z = -origin[1] - (Math.floor(i / width) + 0.5) * resolution;
-      matrix.makeScale(resolution * 0.91, 0.008, resolution * 0.91).setPosition(x, 0.021, z);
+      const x = (i % width + 0.5) * resolution;
+      const y = (Math.floor(i / width) + 0.5) * resolution;
+      matrix.makeRotationY(yaw).scale(scale).setPosition(origin[0] + x * cosine - y * sine, 0.021, -origin[1] - x * sine - y * cosine);
       grid.setMatrixAt(i, matrix);
-      grid.setColorAt(i, occupancyColors[cells[i]]);
+      grid.setColorAt(i, palette[cells[i]]);
     }
     grid.instanceMatrix.needsUpdate = true;
     if (grid.instanceColor) grid.instanceColor.needsUpdate = true;
   }
 
   function updateMode() {
-    const recorded = frame?.provenance === 'GAZEBO';
+    const recorded = hasRecordedMap(frame);
     backdrop.visible = !recorded;
     racks.visible = mode !== 'occupancy' && mode !== 'cloud' && mode !== 'semantic';
     walls.visible = mode === 'follow';
@@ -395,7 +451,8 @@ export function createScene(host, labels, environment, profiles) {
   function update(snapshot) {
     frame = snapshot;
     const { pose, steering } = frame.robot;
-    const recorded = frame.provenance === 'GAZEBO';
+    const recorded = hasRecordedMap(frame);
+    const nav2 = frame.provenance === 'NAV2_PLAN';
     const position = pose && world([pose.x, pose.y, 0]);
     if (currentSession !== frame.session) {
       currentSession = frame.session;
@@ -420,7 +477,14 @@ export function createScene(host, labels, environment, profiles) {
         robot.userData.steering.rotation.y = steering ?? 0;
       }
     }
-    updateRoute(planned, frame.nav.planned, 0.042);
+    updateRoute(planned, nav2 ? [] : frame.nav.planned, 0.042);
+    if (nav2) {
+      updateRibbon(routeRibbon, frame.nav.planned);
+      updateRoute(planCenter, frame.nav.planned, 0.059);
+    } else {
+      routeRibbon.visible = false;
+      planCenter.visible = false;
+    }
     updateRoute(local, frame.nav.local, 0.025);
     updateRoute(history, frame.nav.history, 0.028);
     updateRoute(prediction, frame.nav.prediction, 0.061);
