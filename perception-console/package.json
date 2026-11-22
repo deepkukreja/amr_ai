@@ -1,0 +1,21 @@
+{
+  "name": "robot-buildworks-perception",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.12" },
+  "scripts": {
+    "build": "vite build",
+    "start": "node server/index.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^1.18.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "vite": "^8.0.0"
+  }
+}
