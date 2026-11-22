@@ -96,7 +96,8 @@ export function createBridge({ rosFile = process.env.RBW_ROS_WORLD_FILE } = {}) 
       response.on('close', () => { closed = true; clearInterval(timer); clients--; });
       return;
     }
-    const asset = uri.pathname === '/' ? 'index.html' : /^\/assets\/[\w.-]+$/.test(uri.pathname) ? uri.pathname.slice(1) : null;
+    const isPage = uri.pathname === '/' || uri.pathname === '/survey';
+    const asset = isPage ? 'index.html' : /^\/assets\/[\w.-]+$/.test(uri.pathname) ? uri.pathname.slice(1) : null;
     if (asset) {
       const path = join(files, asset);
       const info = await stat(path).catch(() => null);
@@ -107,6 +108,6 @@ export function createBridge({ rosFile = process.env.RBW_ROS_WORLD_FILE } = {}) 
         return stream.pipe(response);
       }
     }
-    return json(response, 404, { error: uri.pathname === '/' ? 'Build the console with npm run build first' : 'Not found' });
+    return json(response, 404, { error: isPage ? 'Build the console with npm run build first' : 'Not found' });
   });
 }

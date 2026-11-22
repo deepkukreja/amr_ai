@@ -1,0 +1,60 @@
+.survey { max-width: 1480px; padding: 0 clamp(12px, 2vw, 29px) 28px; }
+.survey-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 25px 0 19px;
+}
+.survey-heading p { margin: 6px 0 0; color: var(--muted); }
+.survey-toolbar { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px 16px; margin-bottom: 12px; }
+.survey-controls {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  border-radius: var(--radius);
+  padding: 3px;
+}
+.survey-controls button {
+  min-height: 33px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  padding: 3px clamp(7px, 1vw, 12px);
+  font-size: 13px;
+}
+.survey-controls button:hover { background: var(--surface); }
+.survey-controls button[aria-pressed="true"] {
+  border-color: var(--rule);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 650;
+}
+.survey-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.survey-panel { min-width: 0; border: 1px solid var(--rule); background: var(--paper); }
+.survey-panel-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 4px 12px; flex-wrap: wrap; padding: 10px 12px; }
+.survey-panel-heading h2 { margin: 0; font-size: 15px; font-weight: 650; }
+.survey-panel-heading span { color: var(--muted); font-size: 12px; }
+.survey-scene { position: relative; aspect-ratio: 3 / 2; background: #192229; color: var(--paper); }
+.survey-canvas { position: absolute; inset: 0; }
+.survey-canvas canvas { width: 100%; height: 100%; display: block; }
+.survey-render-status { position: absolute; inset: 0; display: grid; place-content: center; margin: 0; padding: 10px; }
+.survey-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  padding: 12px;
+  margin: 12px 0 0;
+}
+.survey-facts dt { color: var(--muted); font-size: 12px; }
+.survey-facts dd { text-align: left; font-variant-numeric: tabular-nums; font-weight: 600; margin: 3px 0 0; overflow-wrap: anywhere; }
+
+@media (max-width: 780px) {
+  .survey-grid { grid-template-columns: 1fr; }
+  .survey-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

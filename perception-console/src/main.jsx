@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   Activity, BatteryMedium, CircleDot, Focus, Gauge, Layers, MapPin, Maximize, Minus,
@@ -15,6 +15,7 @@ const views = [
   ['follow', 'Follow'], ['bird', 'Bird’s-eye'], ['cloud', 'Point cloud'],
   ['semantic', 'Semantic'], ['occupancy', 'Occupancy'], ['camera', 'Front camera'], ['debug', 'Debug'],
 ];
+const SurveyPilot = lazy(() => import('./SurveyPilot.jsx'));
 const radToDeg = radians => radians * 180 / Math.PI;
 const hasCapturedMap = frame => ['GAZEBO', 'NAV2_PLAN'].includes(frame?.provenance);
 const clock = (milliseconds = 0) => {
@@ -374,8 +375,11 @@ function App() {
 
   const mode = streamOnly ? (state === 'offline' ? 'STALE' : snapshot?.mode ?? 'CONNECTING') : replay ? 'REPLAY' : 'SIMULATION';
   return <>
-    <header className="topbar"><Logo /><div className="mode-badge" data-mode={mode.toLowerCase()}>
-      <span className="small-dot" />{mode}
+    <header className="topbar"><Logo /><div className="topbar-actions">
+      <a className="survey-link" href="/survey">Site survey</a>
+      <div className="mode-badge" data-mode={mode.toLowerCase()}>
+        <span className="small-dot" />{mode}
+      </div>
     </div></header>
     <main>
       <div className="page-head">
@@ -427,4 +431,8 @@ function App() {
   </>;
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+createRoot(document.getElementById('root')).render(
+  window.location.pathname === '/survey'
+    ? <Suspense fallback={<main><p role="status">Loading site survey…</p></main>}><SurveyPilot /></Suspense>
+    : <App />,
+);
