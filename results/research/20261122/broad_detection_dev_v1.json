@@ -1,0 +1,1023 @@
+{
+  "data": {
+    "indoor_thud": 16,
+    "open_images_v5": 70,
+    "road_reviewed": 48,
+    "warehouse_legacy": 19
+  },
+  "device": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "evaluator_sha256": "25f38fb1cf8109c4d9b6146d8cb391122781aecb6d673a3f1952b3b08b4b7a72",
+  "freezer_sha256": "004dcc7293348d6458b45163a290fd87a0580e5f6dc71304dc5f7f0a328d072a",
+  "ground_truth_support": {
+    "indoor_thud": {
+      "human": 22
+    },
+    "open_images_v5": {
+      "bicycle": 9,
+      "bird": 6,
+      "bus": 5,
+      "car": 19,
+      "cat": 5,
+      "cattle": 11,
+      "dog": 6,
+      "goat": 8,
+      "horse": 6,
+      "human": 66,
+      "motorcycle": 5,
+      "sheep": 13,
+      "truck": 6,
+      "van": 8
+    },
+    "road_reviewed": {
+      "human": 88,
+      "pedestrian": 47,
+      "rider": 41
+    },
+    "warehouse_legacy": {
+      "cart_or_pallet_jack": 21,
+      "forklift_or_truck": 11,
+      "human": 11,
+      "rack_or_shelf": 10
+    }
+  },
+  "manifest_sha256": "0435a8380e5846d2f92b0f230d0ca536c393665ed95bb666501902cb59bd4ff3",
+  "models": {
+    "candidate": {
+      "checkpoint_sha256": "2f160e4b51e918d99cd009940bcc6c99e2fc394ff86dc29ebbb60a27359ec7f1",
+      "metrics": {
+        "indoor_thud": {
+          "human": {
+            "ap50": 0.7966991341991342,
+            "ap50_95": 0.3767386831165498,
+            "fn": 5,
+            "fp": 5,
+            "precision": 0.7727272727272727,
+            "recall": 0.7727272727272727,
+            "scored_images": 16,
+            "support": 22,
+            "tp": 17
+          }
+        },
+        "open_images_v5": {
+          "human": {
+            "ap50": 0.5347886932314047,
+            "ap50_95": 0.20630909363621322,
+            "fn": 27,
+            "fp": 23,
+            "precision": 0.6290322580645161,
+            "recall": 0.5909090909090909,
+            "scored_images": 29,
+            "support": 66,
+            "tp": 39
+          }
+        },
+        "road_reviewed": {
+          "human": {
+            "ap50": 0.5331531067254186,
+            "ap50_95": 0.19724863923167263,
+            "fn": 44,
+            "fp": 29,
+            "precision": 0.6027397260273972,
+            "recall": 0.5,
+            "scored_images": 48,
+            "support": 88,
+            "tp": 44
+          },
+          "pedestrian": {
+            "ap50": 0.5113316880066864,
+            "ap50_95": 0.2202836229247644,
+            "fn": 26,
+            "fp": 15,
+            "precision": 0.5833333333333334,
+            "recall": 0.44680851063829785,
+            "scored_images": 48,
+            "support": 47,
+            "tp": 21
+          },
+          "rider": {
+            "ap50": 0.5609017181571224,
+            "ap50_95": 0.1773782740436539,
+            "fn": 18,
+            "fp": 14,
+            "precision": 0.6216216216216216,
+            "recall": 0.5609756097560976,
+            "scored_images": 48,
+            "support": 41,
+            "tp": 23
+          }
+        },
+        "warehouse_legacy": {
+          "human": {
+            "ap50": 0.8181818181818182,
+            "ap50_95": 0.41988636363636367,
+            "fn": 2,
+            "fp": 2,
+            "precision": 0.8181818181818182,
+            "recall": 0.8181818181818182,
+            "scored_images": 5,
+            "support": 11,
+            "tp": 9
+          }
+        }
+      },
+      "road_by_light": {
+        "daytime": {
+          "human": {
+            "ap50": 0.5745434152891744,
+            "ap50_95": 0.21215731162830007,
+            "fn": 21,
+            "fp": 14,
+            "precision": 0.631578947368421,
+            "recall": 0.5333333333333333,
+            "scored_images": 22,
+            "support": 45,
+            "tp": 24
+          },
+          "pedestrian": {
+            "ap50": 0.5061844832035571,
+            "ap50_95": 0.23650136768585997,
+            "fn": 14,
+            "fp": 6,
+            "precision": 0.6470588235294118,
+            "recall": 0.44,
+            "scored_images": 22,
+            "support": 25,
+            "tp": 11
+          },
+          "rider": {
+            "ap50": 0.6898620401337793,
+            "ap50_95": 0.20715095351508395,
+            "fn": 7,
+            "fp": 8,
+            "precision": 0.6190476190476191,
+            "recall": 0.65,
+            "scored_images": 22,
+            "support": 20,
+            "tp": 13
+          }
+        },
+        "dusk": {
+          "human": {
+            "ap50": 0.5470483963787535,
+            "ap50_95": 0.19806244050650562,
+            "fn": 13,
+            "fp": 10,
+            "precision": 0.5238095238095238,
+            "recall": 0.4583333333333333,
+            "scored_images": 6,
+            "support": 24,
+            "tp": 11
+          },
+          "pedestrian": {
+            "ap50": 0.55,
+            "ap50_95": 0.2167630385487528,
+            "fn": 7,
+            "fp": 8,
+            "precision": 0.4666666666666667,
+            "recall": 0.5,
+            "scored_images": 6,
+            "support": 14,
+            "tp": 7
+          },
+          "rider": {
+            "ap50": 0.628051948051948,
+            "ap50_95": 0.18918181818181817,
+            "fn": 6,
+            "fp": 2,
+            "precision": 0.6666666666666666,
+            "recall": 0.4,
+            "scored_images": 6,
+            "support": 10,
+            "tp": 4
+          }
+        },
+        "night": {
+          "human": {
+            "ap50": 0.4864480720517873,
+            "ap50_95": 0.21533868092691621,
+            "fn": 10,
+            "fp": 5,
+            "precision": 0.6428571428571429,
+            "recall": 0.47368421052631576,
+            "scored_images": 20,
+            "support": 19,
+            "tp": 9
+          },
+          "pedestrian": {
+            "ap50": 0.5642857142857143,
+            "ap50_95": 0.29404761904761906,
+            "fn": 5,
+            "fp": 1,
+            "precision": 0.75,
+            "recall": 0.375,
+            "scored_images": 20,
+            "support": 8,
+            "tp": 3
+          },
+          "rider": {
+            "ap50": 0.3939393939393939,
+            "ap50_95": 0.15708874458874456,
+            "fn": 5,
+            "fp": 4,
+            "precision": 0.6,
+            "recall": 0.5454545454545454,
+            "scored_images": 20,
+            "support": 11,
+            "tp": 6
+          }
+        }
+      },
+      "road_by_reviewed_human_count": {
+        "0_to_3": {
+          "human": {
+            "ap50": 0.6240395180945765,
+            "ap50_95": 0.21586966265283766,
+            "fn": 17,
+            "fp": 9,
+            "precision": 0.6785714285714286,
+            "recall": 0.5277777777777778,
+            "scored_images": 40,
+            "support": 36,
+            "tp": 19
+          },
+          "pedestrian": {
+            "ap50": 0.4214775964775965,
+            "ap50_95": 0.1980600017266684,
+            "fn": 10,
+            "fp": 4,
+            "precision": 0.5555555555555556,
+            "recall": 0.3333333333333333,
+            "scored_images": 40,
+            "support": 15,
+            "tp": 5
+          },
+          "rider": {
+            "ap50": 0.7362684077174751,
+            "ap50_95": 0.2301667165016831,
+            "fn": 7,
+            "fp": 5,
+            "precision": 0.7368421052631579,
+            "recall": 0.6666666666666666,
+            "scored_images": 40,
+            "support": 21,
+            "tp": 14
+          }
+        },
+        "4_or_more": {
+          "human": {
+            "ap50": 0.4830682819166645,
+            "ap50_95": 0.19511903549081527,
+            "fn": 27,
+            "fp": 20,
+            "precision": 0.5555555555555556,
+            "recall": 0.4807692307692308,
+            "scored_images": 8,
+            "support": 52,
+            "tp": 25
+          },
+          "pedestrian": {
+            "ap50": 0.5632925955084891,
+            "ap50_95": 0.2405382389958965,
+            "fn": 16,
+            "fp": 11,
+            "precision": 0.5925925925925926,
+            "recall": 0.5,
+            "scored_images": 8,
+            "support": 32,
+            "tp": 16
+          },
+          "rider": {
+            "ap50": 0.40235305235305246,
+            "ap50_95": 0.14500862351965293,
+            "fn": 11,
+            "fp": 9,
+            "precision": 0.5,
+            "recall": 0.45,
+            "scored_images": 8,
+            "support": 20,
+            "tp": 9
+          }
+        }
+      },
+      "supported_labels": [
+        "human",
+        "pedestrian",
+        "rider"
+      ],
+      "wall_ms_p50": 41.5419880009722,
+      "wall_ms_p95": 57.060238999838475
+    },
+    "general": {
+      "checkpoint_sha256": "646f8bc3fe0a656803d95c294f7852321748cb29d13466a1af8862e2db384a1b",
+      "metrics": {
+        "indoor_thud": {
+          "human": {
+            "ap50": 0.9545454545454546,
+            "ap50_95": 0.7837341131091131,
+            "fn": 1,
+            "fp": 1,
+            "precision": 0.9545454545454546,
+            "recall": 0.9545454545454546,
+            "scored_images": 16,
+            "support": 22,
+            "tp": 21
+          }
+        },
+        "open_images_v5": {
+          "bicycle": {
+            "ap50": 0.4957686180804461,
+            "ap50_95": 0.23708957613527507,
+            "fn": 4,
+            "fp": 7,
+            "precision": 0.4166666666666667,
+            "recall": 0.5555555555555556,
+            "scored_images": 6,
+            "support": 9,
+            "tp": 5
+          },
+          "bird": {
+            "ap50": 0.8222222222222223,
+            "ap50_95": 0.37111111111111106,
+            "fn": 1,
+            "fp": 1,
+            "precision": 0.8333333333333334,
+            "recall": 0.8333333333333334,
+            "scored_images": 5,
+            "support": 6,
+            "tp": 5
+          },
+          "bus": {
+            "ap50": 0.7828571428571427,
+            "ap50_95": 0.4347936507936507,
+            "fn": 0,
+            "fp": 2,
+            "precision": 0.7142857142857143,
+            "recall": 1.0,
+            "scored_images": 8,
+            "support": 5,
+            "tp": 5
+          },
+          "car": {
+            "ap50": 0.6501594896331738,
+            "ap50_95": 0.4923519024834814,
+            "fn": 6,
+            "fp": 8,
+            "precision": 0.6190476190476191,
+            "recall": 0.6842105263157895,
+            "scored_images": 19,
+            "support": 19,
+            "tp": 13
+          },
+          "cat": {
+            "ap50": 1.0,
+            "ap50_95": 0.4746666666666666,
+            "fn": 0,
+            "fp": 1,
+            "precision": 0.8333333333333334,
+            "recall": 1.0,
+            "scored_images": 5,
+            "support": 5,
+            "tp": 5
+          },
+          "cattle": {
+            "ap50": 0.36363636363636365,
+            "ap50_95": 0.30909090909090914,
+            "fn": 7,
+            "fp": 0,
+            "precision": 1.0,
+            "recall": 0.36363636363636365,
+            "scored_images": 7,
+            "support": 11,
+            "tp": 4
+          },
+          "dog": {
+            "ap50": 0.7857142857142857,
+            "ap50_95": 0.5412698412698412,
+            "fn": 1,
+            "fp": 3,
+            "precision": 0.625,
+            "recall": 0.8333333333333334,
+            "scored_images": 9,
+            "support": 6,
+            "tp": 5
+          },
+          "horse": {
+            "ap50": 1.0,
+            "ap50_95": 0.8983333333333334,
+            "fn": 0,
+            "fp": 1,
+            "precision": 0.8571428571428571,
+            "recall": 1.0,
+            "scored_images": 7,
+            "support": 6,
+            "tp": 6
+          },
+          "human": {
+            "ap50": 0.7469008071600971,
+            "ap50_95": 0.48971946322265786,
+            "fn": 16,
+            "fp": 29,
+            "precision": 0.6329113924050633,
+            "recall": 0.7575757575757576,
+            "scored_images": 29,
+            "support": 66,
+            "tp": 50
+          },
+          "motorcycle": {
+            "ap50": 0.9666666666666668,
+            "ap50_95": 0.5816666666666668,
+            "fn": 0,
+            "fp": 3,
+            "precision": 0.625,
+            "recall": 1.0,
+            "scored_images": 5,
+            "support": 5,
+            "tp": 5
+          },
+          "sheep": {
+            "ap50": 0.758974358974359,
+            "ap50_95": 0.4508158508158509,
+            "fn": 3,
+            "fp": 6,
+            "precision": 0.625,
+            "recall": 0.7692307692307693,
+            "scored_images": 9,
+            "support": 13,
+            "tp": 10
+          },
+          "truck": {
+            "ap50": 0.45,
+            "ap50_95": 0.2261309523809524,
+            "fn": 2,
+            "fp": 9,
+            "precision": 0.3076923076923077,
+            "recall": 0.6666666666666666,
+            "scored_images": 10,
+            "support": 6,
+            "tp": 4
+          }
+        },
+        "road_reviewed": {
+          "human": {
+            "ap50": 0.34346603595414193,
+            "ap50_95": 0.11156572239705928,
+            "fn": 49,
+            "fp": 37,
+            "precision": 0.5131578947368421,
+            "recall": 0.4431818181818182,
+            "scored_images": 48,
+            "support": 88,
+            "tp": 39
+          }
+        },
+        "warehouse_legacy": {
+          "human": {
+            "ap50": 0.8181818181818182,
+            "ap50_95": 0.6181818181818182,
+            "fn": 2,
+            "fp": 1,
+            "precision": 0.9,
+            "recall": 0.8181818181818182,
+            "scored_images": 5,
+            "support": 11,
+            "tp": 9
+          }
+        }
+      },
+      "road_by_light": {
+        "daytime": {
+          "human": {
+            "ap50": 0.347130761115163,
+            "ap50_95": 0.10469723059845341,
+            "fn": 24,
+            "fp": 19,
+            "precision": 0.525,
+            "recall": 0.4666666666666667,
+            "scored_images": 22,
+            "support": 45,
+            "tp": 21
+          }
+        },
+        "dusk": {
+          "human": {
+            "ap50": 0.3180244194737089,
+            "ap50_95": 0.10865747203466643,
+            "fn": 15,
+            "fp": 9,
+            "precision": 0.5,
+            "recall": 0.375,
+            "scored_images": 6,
+            "support": 24,
+            "tp": 9
+          }
+        },
+        "night": {
+          "human": {
+            "ap50": 0.4552161578116721,
+            "ap50_95": 0.203216931987478,
+            "fn": 10,
+            "fp": 9,
+            "precision": 0.5,
+            "recall": 0.47368421052631576,
+            "scored_images": 20,
+            "support": 19,
+            "tp": 9
+          }
+        }
+      },
+      "road_by_reviewed_human_count": {
+        "0_to_3": {
+          "human": {
+            "ap50": 0.3714619601163861,
+            "ap50_95": 0.12238034717688348,
+            "fn": 18,
+            "fp": 15,
+            "precision": 0.5454545454545454,
+            "recall": 0.5,
+            "scored_images": 40,
+            "support": 36,
+            "tp": 18
+          }
+        },
+        "4_or_more": {
+          "human": {
+            "ap50": 0.3489713926667189,
+            "ap50_95": 0.1260740211580153,
+            "fn": 31,
+            "fp": 22,
+            "precision": 0.4883720930232558,
+            "recall": 0.40384615384615385,
+            "scored_images": 8,
+            "support": 52,
+            "tp": 21
+          }
+        }
+      },
+      "supported_labels": [
+        "bicycle",
+        "bird",
+        "bus",
+        "car",
+        "cat",
+        "cattle",
+        "dog",
+        "horse",
+        "human",
+        "motorcycle",
+        "sheep",
+        "truck"
+      ],
+      "wall_ms_p50": 57.287241994345095,
+      "wall_ms_p95": 241.9251469982555
+    },
+    "reference": {
+      "checkpoint_sha256": "6372ac75302d49ee3df87e8b65ce6f71ca5b2d8bef6281da811299ac67b53e0c",
+      "metrics": {
+        "indoor_thud": {
+          "human": {
+            "ap50": 0.10898662937075501,
+            "ap50_95": 0.04580756776641681,
+            "fn": 18,
+            "fp": 10,
+            "precision": 0.2857142857142857,
+            "recall": 0.18181818181818182,
+            "scored_images": 16,
+            "support": 22,
+            "tp": 4
+          }
+        },
+        "open_images_v5": {
+          "human": {
+            "ap50": 0.26363573880524244,
+            "ap50_95": 0.10704837394639695,
+            "fn": 46,
+            "fp": 30,
+            "precision": 0.4,
+            "recall": 0.30303030303030304,
+            "scored_images": 29,
+            "support": 66,
+            "tp": 20
+          }
+        },
+        "road_reviewed": {
+          "human": {
+            "ap50": 0.4576250241977861,
+            "ap50_95": 0.14779479427460002,
+            "fn": 51,
+            "fp": 21,
+            "precision": 0.6379310344827587,
+            "recall": 0.42045454545454547,
+            "scored_images": 48,
+            "support": 88,
+            "tp": 37
+          },
+          "pedestrian": {
+            "ap50": 0.4580947858665103,
+            "ap50_95": 0.1634195425650319,
+            "fn": 30,
+            "fp": 6,
+            "precision": 0.7391304347826086,
+            "recall": 0.3617021276595745,
+            "scored_images": 48,
+            "support": 47,
+            "tp": 17
+          },
+          "rider": {
+            "ap50": 0.3579116361671547,
+            "ap50_95": 0.10281875955164903,
+            "fn": 23,
+            "fp": 17,
+            "precision": 0.5142857142857142,
+            "recall": 0.43902439024390244,
+            "scored_images": 48,
+            "support": 41,
+            "tp": 18
+          }
+        },
+        "warehouse_legacy": {
+          "human": {
+            "ap50": 0.8090909090909091,
+            "ap50_95": 0.4097681704260651,
+            "fn": 3,
+            "fp": 1,
+            "precision": 0.8888888888888888,
+            "recall": 0.7272727272727273,
+            "scored_images": 5,
+            "support": 11,
+            "tp": 8
+          }
+        }
+      },
+      "road_by_light": {
+        "daytime": {
+          "human": {
+            "ap50": 0.4294824690269485,
+            "ap50_95": 0.14067165445659424,
+            "fn": 26,
+            "fp": 12,
+            "precision": 0.6129032258064516,
+            "recall": 0.4222222222222222,
+            "scored_images": 22,
+            "support": 45,
+            "tp": 19
+          },
+          "pedestrian": {
+            "ap50": 0.36717983193277304,
+            "ap50_95": 0.15180073357644944,
+            "fn": 17,
+            "fp": 4,
+            "precision": 0.6666666666666666,
+            "recall": 0.32,
+            "scored_images": 22,
+            "support": 25,
+            "tp": 8
+          },
+          "rider": {
+            "ap50": 0.42339340607463605,
+            "ap50_95": 0.11296923447627968,
+            "fn": 10,
+            "fp": 9,
+            "precision": 0.5263157894736842,
+            "recall": 0.5,
+            "scored_images": 22,
+            "support": 20,
+            "tp": 10
+          }
+        },
+        "dusk": {
+          "human": {
+            "ap50": 0.516664301180863,
+            "ap50_95": 0.1541523056660649,
+            "fn": 15,
+            "fp": 3,
+            "precision": 0.75,
+            "recall": 0.375,
+            "scored_images": 6,
+            "support": 24,
+            "tp": 9
+          },
+          "pedestrian": {
+            "ap50": 0.5928048142333857,
+            "ap50_95": 0.18980703819989533,
+            "fn": 8,
+            "fp": 2,
+            "precision": 0.75,
+            "recall": 0.42857142857142855,
+            "scored_images": 6,
+            "support": 14,
+            "tp": 6
+          },
+          "rider": {
+            "ap50": 0.4071557971014492,
+            "ap50_95": 0.11908363526570047,
+            "fn": 7,
+            "fp": 1,
+            "precision": 0.75,
+            "recall": 0.3,
+            "scored_images": 6,
+            "support": 10,
+            "tp": 3
+          }
+        },
+        "night": {
+          "human": {
+            "ap50": 0.46673994928842566,
+            "ap50_95": 0.20873909166621402,
+            "fn": 10,
+            "fp": 6,
+            "precision": 0.6,
+            "recall": 0.47368421052631576,
+            "scored_images": 20,
+            "support": 19,
+            "tp": 9
+          },
+          "pedestrian": {
+            "ap50": 0.525,
+            "ap50_95": 0.255625,
+            "fn": 5,
+            "fp": 0,
+            "precision": 1.0,
+            "recall": 0.375,
+            "scored_images": 20,
+            "support": 8,
+            "tp": 3
+          },
+          "rider": {
+            "ap50": 0.37256329529056803,
+            "ap50_95": 0.15987734703494272,
+            "fn": 6,
+            "fp": 7,
+            "precision": 0.4166666666666667,
+            "recall": 0.45454545454545453,
+            "scored_images": 20,
+            "support": 11,
+            "tp": 5
+          }
+        }
+      },
+      "road_by_reviewed_human_count": {
+        "0_to_3": {
+          "human": {
+            "ap50": 0.4772480823261205,
+            "ap50_95": 0.15118846684753715,
+            "fn": 20,
+            "fp": 11,
+            "precision": 0.5925925925925926,
+            "recall": 0.4444444444444444,
+            "scored_images": 40,
+            "support": 36,
+            "tp": 16
+          },
+          "pedestrian": {
+            "ap50": 0.3858333333333333,
+            "ap50_95": 0.14702777777777776,
+            "fn": 11,
+            "fp": 2,
+            "precision": 0.6666666666666666,
+            "recall": 0.26666666666666666,
+            "scored_images": 40,
+            "support": 15,
+            "tp": 4
+          },
+          "rider": {
+            "ap50": 0.4197774325574627,
+            "ap50_95": 0.12741948554039817,
+            "fn": 11,
+            "fp": 11,
+            "precision": 0.47619047619047616,
+            "recall": 0.47619047619047616,
+            "scored_images": 40,
+            "support": 21,
+            "tp": 10
+          }
+        },
+        "4_or_more": {
+          "human": {
+            "ap50": 0.44377749250206794,
+            "ap50_95": 0.15041332908508553,
+            "fn": 31,
+            "fp": 10,
+            "precision": 0.6774193548387096,
+            "recall": 0.40384615384615385,
+            "scored_images": 8,
+            "support": 52,
+            "tp": 21
+          },
+          "pedestrian": {
+            "ap50": 0.48545853121554866,
+            "ap50_95": 0.17827902483751126,
+            "fn": 19,
+            "fp": 4,
+            "precision": 0.7647058823529411,
+            "recall": 0.40625,
+            "scored_images": 8,
+            "support": 32,
+            "tp": 13
+          },
+          "rider": {
+            "ap50": 0.31428113553113557,
+            "ap50_95": 0.09066254019146584,
+            "fn": 12,
+            "fp": 6,
+            "precision": 0.5714285714285714,
+            "recall": 0.4,
+            "scored_images": 8,
+            "support": 20,
+            "tp": 8
+          }
+        }
+      },
+      "supported_labels": [
+        "human",
+        "pedestrian",
+        "rider"
+      ],
+      "wall_ms_p50": 40.8748400004697,
+      "wall_ms_p95": 55.01118599931942
+    },
+    "warehouse": {
+      "checkpoint_sha256": "0f1ad36f202066da31c6e1e6a272b16bec37f9d1d1dd25f1125f994de9cef092",
+      "metrics": {
+        "indoor_thud": {
+          "human": {
+            "ap50": 0.8801652892561983,
+            "ap50_95": 0.5869035628983897,
+            "fn": 4,
+            "fp": 3,
+            "precision": 0.8571428571428571,
+            "recall": 0.8181818181818182,
+            "scored_images": 16,
+            "support": 22,
+            "tp": 18
+          }
+        },
+        "open_images_v5": {
+          "human": {
+            "ap50": 0.13960849234248537,
+            "ap50_95": 0.05688878700740059,
+            "fn": 56,
+            "fp": 14,
+            "precision": 0.4166666666666667,
+            "recall": 0.15151515151515152,
+            "scored_images": 29,
+            "support": 66,
+            "tp": 10
+          }
+        },
+        "road_reviewed": {
+          "human": {
+            "ap50": 0.07001037000181198,
+            "ap50_95": 0.012307418503309556,
+            "fn": 79,
+            "fp": 11,
+            "precision": 0.45,
+            "recall": 0.10227272727272728,
+            "scored_images": 48,
+            "support": 88,
+            "tp": 9
+          }
+        },
+        "warehouse_legacy": {
+          "cart_or_pallet_jack": {
+            "ap50": 0.42889339845645696,
+            "ap50_95": 0.2877745298350133,
+            "fn": 11,
+            "fp": 15,
+            "precision": 0.4,
+            "recall": 0.47619047619047616,
+            "scored_images": 13,
+            "support": 21,
+            "tp": 10
+          },
+          "forklift_or_truck": {
+            "ap50": 0.7392440447253282,
+            "ap50_95": 0.4601432984721755,
+            "fn": 5,
+            "fp": 0,
+            "precision": 1.0,
+            "recall": 0.5454545454545454,
+            "scored_images": 7,
+            "support": 11,
+            "tp": 6
+          },
+          "human": {
+            "ap50": 0.768595041322314,
+            "ap50_95": 0.4748852157943067,
+            "fn": 5,
+            "fp": 0,
+            "precision": 1.0,
+            "recall": 0.5454545454545454,
+            "scored_images": 5,
+            "support": 11,
+            "tp": 6
+          },
+          "rack_or_shelf": {
+            "ap50": 0.1687878787878788,
+            "ap50_95": 0.05940761062819886,
+            "fn": 7,
+            "fp": 13,
+            "precision": 0.1875,
+            "recall": 0.3,
+            "scored_images": 11,
+            "support": 10,
+            "tp": 3
+          }
+        }
+      },
+      "road_by_light": {
+        "daytime": {
+          "human": {
+            "ap50": 0.08318764568764571,
+            "ap50_95": 0.01541694818868732,
+            "fn": 39,
+            "fp": 7,
+            "precision": 0.46153846153846156,
+            "recall": 0.13333333333333333,
+            "scored_images": 22,
+            "support": 45,
+            "tp": 6
+          }
+        },
+        "dusk": {
+          "human": {
+            "ap50": 0.018518518518518517,
+            "ap50_95": 0.0018518518518518517,
+            "fn": 24,
+            "fp": 2,
+            "precision": 0.0,
+            "recall": 0.0,
+            "scored_images": 6,
+            "support": 24,
+            "tp": 0
+          }
+        },
+        "night": {
+          "human": {
+            "ap50": 0.12481203007518797,
+            "ap50_95": 0.032781954887218044,
+            "fn": 16,
+            "fp": 2,
+            "precision": 0.6,
+            "recall": 0.15789473684210525,
+            "scored_images": 20,
+            "support": 19,
+            "tp": 3
+          }
+        }
+      },
+      "road_by_reviewed_human_count": {
+        "0_to_3": {
+          "human": {
+            "ap50": 0.0858385441718775,
+            "ap50_95": 0.02287075010759221,
+            "fn": 31,
+            "fp": 6,
+            "precision": 0.45454545454545453,
+            "recall": 0.1388888888888889,
+            "scored_images": 40,
+            "support": 36,
+            "tp": 5
+          }
+        },
+        "4_or_more": {
+          "human": {
+            "ap50": 0.06215161649944259,
+            "ap50_95": 0.007269180095267053,
+            "fn": 48,
+            "fp": 5,
+            "precision": 0.4444444444444444,
+            "recall": 0.07692307692307693,
+            "scored_images": 8,
+            "support": 52,
+            "tp": 4
+          }
+        }
+      },
+      "supported_labels": [
+        "cart_or_pallet_jack",
+        "forklift_or_truck",
+        "human",
+        "rack_or_shelf"
+      ],
+      "wall_ms_p50": 42.022379995614756,
+      "wall_ms_p95": 59.492458996828645
+    }
+  },
+  "motion_or_runtime_profiles_changed": false,
+  "protocol": {
+    "ap": "all-point interpolated from confidence-ranked detections above prediction floor",
+    "augment": false,
+    "batch": 1,
+    "confidence": 0.25,
+    "imgsz": 960,
+    "iou": 0.5,
+    "nms": true,
+    "nms_iou": 0.7,
+    "precision": "FP32",
+    "prediction_floor": 0.01
+  },
+  "scope": "Mixed-source development benchmark with cohort-specific partial label coverage.",
+  "scorer_sha256": "ef840c75fd0c3e744c7ade6c99129b69cfac065fdfc0083697c51ef2e63093e6",
+  "torch": "2.11.0+cu128",
+  "ultralytics": "8.4.156"
+}
