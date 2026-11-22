@@ -23,6 +23,14 @@ Keep the shared operator view centered on the robot's SLAM map, pose, planned pa
 2. Register both representations to the same site map ID and revision. Use independent surveyed landmarks to measure alignment and inspect occlusion, fine edges and lighting changes.
 3. Compare whether operators can recognize landmarks and changes in layout. Measure first render, camera-movement latency, asset size and GPU memory on the target operator workstation. Enable the optional layer where the visual improvement justifies the cost. Date each capture so operators can distinguish survey appearance from live observations.
 
+### What to hand over from the first site
+
+- One local ROS bag or equivalent synchronized export with original RGB, matching camera intrinsics and distortion, and timestamped camera poses or the transforms needed to resolve the optical frame in the site map. Include aligned depth or LiDAR and its calibration for the colored point-cloud baseline. Record the acquisition timestamps and clock domain. The browser's downsampled previews are unsuitable as source data for this comparison.
+- The exact SLAM map used for the recording, including frame, origin, resolution and map revision. Include which camera and sensor mounts were used. Keep at least one overlapping view out of reconstruction and include independently measured doorway landmarks for the alignment check.
+- Capture date, site ID, and the names of the topics or files in the recording. Keep raw captures local and publish aggregate alignment and rendering results.
+
+The [stationary Gazebo test](ros-stream-plan.md#stationary-gazebo-integration) proved that the running simulator's map, filtered LiDAR and calibrated camera reach the console. Site registration and learned splat reconstruction need the source recording above.
+
 ## References
 
 - Cartken describes camera-based perception, mapping and remote assistance. Its RealSense case study describes depth-based visual SLAM with monocular and stereo features and semantics. The published sources leave the display representation unspecified. [Cartken](https://www.cartken.com/) · [RealSense case study](https://www.realsenseai.com/case-studies/cartken/)
