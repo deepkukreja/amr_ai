@@ -31,3 +31,5 @@ Use sequences 1 through 6 across operators to vary the order of layout exposure 
 The local summary reports correct, incorrect and missed responses, median time from replay start to a correct mark, and the number of focused-camera changes. Fixed layouts keep their cameras and priority fixed during a run. Compare misses and errors alongside time, and review each maneuver before aggregating across operators. The CSV records the sequence, simulated delivery profile, layout, maneuver and response for each run. No operator name is requested. Scored progress survives reload in the same browser tab.
 
 The exercise measures hazard recognition in a controlled replay, with the map present for all layouts. It still needs participant sessions and a separate encoded-video measurement before a default is chosen for live teleoperation.
+
+The [camera transport benchmark](camera-transport-benchmark.md) runs the same synthetic doorway clip through local WebRTC and measures each displayed feed, including recovery from a paused source.

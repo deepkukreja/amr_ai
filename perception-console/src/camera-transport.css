@@ -1,0 +1,24 @@
+.camera-transport { max-width: 1240px; }
+.transport-panel { background: var(--paper); border: 1px solid var(--rule); padding: 16px; margin: 12px 0; }
+.transport-panel h2 { margin: 0 0 8px; font-size: 18px; }
+.transport-panel p { margin: 0 0 12px; line-height: 1.5; }
+.transport-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; }
+.transport-button {
+  min-height: 36px; padding: 6px 12px; border: 1px solid var(--accent); border-radius: var(--radius);
+  color: var(--paper); background: var(--accent); font: inherit;
+}
+.transport-videos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.transport-feed { background: var(--paper); border: 1px solid var(--rule); }
+.transport-feed header { display: flex; justify-content: space-between; padding: 6px 9px; gap: 8px; font-size: 12px; }
+.transport-feed header span { color: var(--muted); }
+.transport-feed[data-status="delayed"] header span, .transport-feed[data-status="stale"] header span { color: var(--warning-ink); }
+.transport-video { position: relative; background: #152331; overflow: hidden; }
+.transport-video video { display: block; width: 100%; aspect-ratio: 16 / 9; max-height: 26vh; object-fit: contain; }
+.transport-interrupted { display: none; }
+.transport-feed[data-status="stale"] video { filter: blur(20px) brightness(0.3); }
+.transport-feed[data-status="stale"] .transport-interrupted {
+  display: grid; position: absolute; inset: 0; place-items: center; color: white; font-weight: 650;
+}
+.transport-table-wrap { overflow-x: auto; margin-bottom: 12px; }
+.transport-table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.transport-table th, .transport-table td { padding: 6px 8px; border-bottom: 1px solid var(--rule); text-align: left; white-space: nowrap; }

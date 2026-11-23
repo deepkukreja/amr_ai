@@ -19,6 +19,7 @@ const views = [
 const SurveyPilot = lazy(() => import('./SurveyPilot.jsx'));
 const CameraTrial = lazy(() => import('./CameraTrial.jsx'));
 const CameraStudy = lazy(() => import('./CameraStudy.jsx'));
+const CameraTransport = lazy(() => import('./CameraTransport.jsx'));
 const radToDeg = radians => radians * 180 / Math.PI;
 const hasCapturedMap = frame => ['GAZEBO', 'NAV2_PLAN'].includes(frame?.provenance);
 const clock = (milliseconds = 0) => {
@@ -460,7 +461,7 @@ function App() {
   </>;
 }
 
-const pages = { '/survey': SurveyPilot, '/cameras': CameraTrial, '/cameras/study': CameraStudy };
+const pages = { '/survey': SurveyPilot, '/cameras': CameraTrial, '/cameras/study': CameraStudy, '/cameras/transport': CameraTransport };
 const Page = pages[window.location.pathname] ?? App;
 createRoot(document.getElementById('root')).render(
   <Suspense fallback={<main><p role="status">Loading console…</p></main>}><Page /></Suspense>,

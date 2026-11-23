@@ -96,7 +96,7 @@ export function createBridge({ rosFile = process.env.RBW_ROS_WORLD_FILE } = {}) 
       response.on('close', () => { closed = true; clearInterval(timer); clients--; });
       return;
     }
-    const isPage = ['/', '/survey', '/cameras', '/cameras/study'].includes(uri.pathname);
+    const isPage = ['/', '/survey', '/cameras', '/cameras/study', '/cameras/transport'].includes(uri.pathname);
     const asset = isPage ? 'index.html' : /^\/assets\/[\w.-]+$/.test(uri.pathname) ? uri.pathname.slice(1) : null;
     if (asset) {
       const path = join(files, asset);

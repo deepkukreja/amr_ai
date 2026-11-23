@@ -73,6 +73,7 @@ export default function CameraTrial() {
       <nav className="topbar-actions" aria-label="Camera trial navigation">
         <a className="survey-link" href="/"><ArrowLeft size={15} aria-hidden="true" /> Console</a>
         <a className="survey-link" href="/cameras/study">Operator comparison</a>
+        <a className="survey-link" href="/cameras/transport">Transport benchmark</a>
       </nav>
     </header>
     <main className="camera-trial">
