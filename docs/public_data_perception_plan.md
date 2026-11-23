@@ -83,3 +83,40 @@ The four existing checkpoints ran on the same sample. The general pretrained COC
 | Human | 61 / 74 | 53 |
 
 An unmatched prediction counts only in the image/class pairs covered by the benchmark. These counts apply to a small, class-targeted public sample. Keep the current general checkpoint as the person/traffic/animal reference. Prioritize LOCO equipment training, then dense people and riders. Review the car and motorcycle misses before picking a separate training source for those classes.
+
+## LOCO equipment training pilot
+
+The first warehouse run fine-tunes YOLO26s for six epochs at 640 px on the laptop RTX 4060. It tests the conversion, grouped splits, training, and evaluation end to end. The pilot has five equipment classes.
+
+| Role | Images | Source |
+|---|---:|---|
+| Train | 603 | Up to 68 images per capture group, sampled across sorted archive paths in sites 2, 3 and 5 |
+| Tune | 219 | All linked images in capture `subset-3/2019-12-17_9` |
+| Site 1 evaluation | 1,075 | All linked images for LOCO site 1 |
+| Site 4 evaluation | 1,202 | All linked images for LOCO site 4 |
+
+The training split contains 85 forklift boxes across 68 images, 395 pallet-truck boxes and 14,721 pallet boxes. The prepared dataset passed file-hash and exact cross-split duplicate checks for all 3,099 image-label pairs. Its manifest SHA-256 is `528e3aeef0c1157446795c960887d2062a4eaa9c0ec74fc4ba92d192004cf2c9`.
+
+```bash
+python3 -m scripts.data.prepare_loco_pilot \
+  --source datasets/external/loco_v1 --output datasets/loco_equipment_pilot_v1
+.venv/bin/python -m scripts.training.run_loco_pilot \
+  --dataset datasets/loco_equipment_pilot_v1 --weights weights/yolo26s.pt \
+  --output runs/experiments/loco_equipment_pilot_v1
+```
+
+### Held-out warehouse results
+
+| Equipment | Site 1 AP50 (boxes) | Site 4 AP50 (boxes) |
+|---|---:|---:|
+| Forklift | 0.4% (5) | 7.1% (119) |
+| Pallet truck | 20.3% (594) | 18.1% (559) |
+| Pallet | 43.3% (13,275) | 35.3% (39,022) |
+| Small load carrier | 26.5% (8,911) | No examples (0) |
+| Stillage | 26.5% (1,978) | 0.0% (29) |
+
+The two sites scored 9.5% and 5.5% mAP50-95, respectively. Site 4 contributes four classes to its mean. Best tuning mAP50-95 was 5.7%.
+
+The result establishes a reproducible training baseline. Pallets led on both sites, and forklifts and stillages transferred poorly. Keep the candidate for research. For the next candidate, increase diverse forklift and pallet-truck support in the training groups and choose image size and training duration on the tuning split. Treat these two warehouse scores as historical baselines and reserve another site for a later independent check if they start informing model choices.
+
+Local checkpoint SHA-256 `0b1d2236b0cef1006ffd2e65838a865ca455cac551ed629eb216d60f4a41ae7e`. Starting COCO weights SHA-256 `646f8bc3fe0a656803d95c294f7852321748cb29d13466a1af8862e2db384a1b`.
