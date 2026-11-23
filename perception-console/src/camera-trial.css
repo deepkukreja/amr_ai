@@ -13,7 +13,7 @@
 .trial-card[data-primary="true"] { border-color: #839bad; }
 .trial-views[data-layout="focus"] .trial-card[data-primary="true"] { grid-row: span 3; }
 .trial-feed-head { min-height: 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1px 6px; padding: 3px 8px; }
-.trial-feed-head button { text-align: left; padding: 2px 0; border: 0; background: transparent; color: var(--accent); font-weight: 680; font-size: 13px; }
+.trial-feed-head button, .trial-feed-head strong { text-align: left; padding: 2px 0; border: 0; background: transparent; color: var(--accent); font-weight: 680; font-size: 13px; }
 .trial-feed-status { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 10px; }
 .trial-card[data-status="ready"] .trial-feed-status .small-dot { color: #33775e; }
 .trial-card[data-status="stale"] .trial-feed-status { color: var(--warning-ink); }
@@ -45,5 +45,6 @@
   .trial-map { width: min(100%, 230px); }
 }
 @media (max-width: 480px) {
+  .trial-topbar { height: auto; min-height: 47px; flex-wrap: wrap; gap: 2px 8px; padding-block: 5px; }
   .trial-views[data-layout="focus"] .trial-card:not([data-primary="true"]) .trial-rate { display: none; }
 }

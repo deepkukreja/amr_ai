@@ -1,36 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Pause, Play, RotateCcw } from 'lucide-react';
 import wordmark from './wordmark.webp';
-import { cameraRig, clipLengthMs, clips, feedProfile, feedState, nextFrame } from './camera-trial.js';
-import { createTrialRenderer } from './camera-trial-renderer.js';
-import './camera-trial.css';
+import { cameraRig, clipLengthMs, clips } from './camera-trial.js';
+import { ReplayFeeds, ReplayMap, useReplayViews } from './ReplayViews.jsx';
 
 const ids = Object.keys(cameraRig);
 const layouts = [['focus', 'Focused'], ['pair', 'Front and rear'], ['grid', 'Four cameras']];
 const formatTime = milliseconds => (milliseconds / 1000).toFixed(1) + ' s';
-
-function CameraFeed({ id, time, frame, primary, hidden, canvas, onFocus }) {
-  const label = cameraRig[id].label;
-  const state = feedState(frame, time);
-  return <section className="trial-card" data-feed={id} data-primary={primary} hidden={hidden}
-    data-status={state} data-stamp={frame ? Math.round(frame.stampMs) : undefined} aria-label={`${label} feed`}>
-    <div className="trial-feed-head">
-      <button type="button" onClick={onFocus} aria-label={`Focus ${label.toLowerCase()} camera`}
-        aria-pressed={primary}>{label}</button>
-      <span className="trial-feed-status mono"><span className="small-dot" />{state === 'ready' ? <>
-        <span className="trial-rate">{frame.profile.fps} fps cap ·</span>
-        <span>{Math.round(time - frame.stampMs)} ms</span>
-      </> : state === 'stale' ? 'Stale' : 'Unavailable'}</span>
-    </div>
-    <button type="button" className="trial-video" aria-label={`Enlarge ${label.toLowerCase()} view`}
-      tabIndex={-1} onClick={onFocus}>
-      <canvas ref={canvas} role="img" aria-label={`${label} simulated camera`} hidden={state !== 'ready'} />
-      {state !== 'ready' && <span className="trial-feed-message">
-        {state === 'stale' ? 'Feed interrupted' : 'No frame'}
-      </span>}
-    </button>
-  </section>;
-}
 
 export default function CameraTrial() {
   const [clip, setClip] = useState(clips[0].id);
@@ -40,26 +16,11 @@ export default function CameraTrial() {
   const [interrupted, setInterrupted] = useState('');
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [frames, setFrames] = useState({});
-  const [ready, setReady] = useState(false);
-  const [renderError, setRenderError] = useState('');
-  const renderer = useRef(null);
-  const targets = useRef({});
-  const mapCanvas = useRef(null);
-  const last = useRef({});
+  const [seekVersion, setSeekVersion] = useState(0);
   const playhead = useRef(0);
   const selectedClip = clips.find(item => item.id === clip);
-  const orderedIds = layout === 'focus' ? [focused, ...ids.filter(id => id !== focused)] : ids;
-
-  useEffect(() => {
-    try {
-      renderer.current = createTrialRenderer(() => setRenderError('The graphics context was lost. Reload to resume the trial.'));
-      setReady(true);
-    } catch {
-      setRenderError('Camera replay needs WebGL 2 on this device.');
-    }
-    return () => renderer.current?.dispose();
-  }, []);
+  const replay = useReplayViews({ clip, layout, focused, link, time, interrupted, seekVersion });
+  const { ready, renderError } = replay;
 
   useEffect(() => {
     if (!playing || renderError) return;
@@ -75,29 +36,10 @@ export default function CameraTrial() {
     return () => clearInterval(timer);
   }, [playing, renderError]);
 
-  useEffect(() => {
-    if (!ready || renderError) return;
-    const current = last.current;
-    let changed = false;
-    for (const id of ids) {
-      const profile = feedProfile(id, layout, focused, link);
-      if (!profile) continue;
-      const frame = nextFrame(current[id] ?? null, time, profile, interrupted === id);
-      if (frame && frame !== current[id]) {
-        renderer.current.paintFeed(targets.current[id], id, clip, frame);
-        current[id] = frame;
-        changed = true;
-      }
-    }
-    if (changed) setFrames({ ...current });
-    renderer.current.paintMap(mapCanvas.current, clip, time);
-  }, [ready, renderError, clip, layout, focused, link, interrupted, time]);
-
   function seek(next, clipChanged = false) {
     if (!clipChanged && next === playhead.current) return;
     playhead.current = next;
-    last.current = {};
-    setFrames({});
+    setSeekVersion(version => version + 1);
     setTime(next);
   }
 
@@ -123,12 +65,15 @@ export default function CameraTrial() {
   }
 
   return <>
-    <header className="topbar">
+    <header className="topbar trial-topbar">
       <div className="brand">
         <img className="brand-wordmark" src={wordmark} alt="Robot Buildworks" />
         <span className="brand-context">Perception console</span>
       </div>
-      <a className="survey-link" href="/"><ArrowLeft size={15} aria-hidden="true" /> Console</a>
+      <nav className="topbar-actions" aria-label="Camera trial navigation">
+        <a className="survey-link" href="/"><ArrowLeft size={15} aria-hidden="true" /> Console</a>
+        <a className="survey-link" href="/cameras/study">Operator comparison</a>
+      </nav>
     </header>
     <main className="camera-trial">
       <div className="trial-heading">
@@ -158,11 +103,7 @@ export default function CameraTrial() {
           onChange={event => { setPlaying(false); seek(Number(event.target.value)); }} />
         <span className="trial-time mono">{formatTime(time)} / {formatTime(clipLengthMs)}</span>
       </section>
-      <div className="trial-views" data-layout={layout}>
-        {orderedIds.map(id => <CameraFeed key={id} id={id} time={time} frame={renderError ? null : frames[id]}
-          primary={focused === id} hidden={!feedProfile(id, layout, focused, link)}
-          canvas={element => { targets.current[id] = element; }} onFocus={() => focus(id)} />)}
-      </div>
+      <ReplayFeeds layout={layout} focused={focused} link={link} time={time} replay={replay} onFocus={focus} />
       <div className="trial-footer">
         <section className="trial-controls" aria-label="Link controls">
           <div className="trial-link-controls">
@@ -176,10 +117,7 @@ export default function CameraTrial() {
             <span className="trial-link-note">Frame age advances during playback.</span>
           </div>
         </section>
-        <section className="trial-map" aria-label="Simulated map">
-          <span>Map</span>
-          <canvas ref={mapCanvas} role="img" aria-label="Top-down simulated map of the robot and warehouse entrance" />
-        </section>
+        <ReplayMap replay={replay} />
       </div>
     </main>
   </>;
