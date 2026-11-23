@@ -17,6 +17,7 @@ const views = [
   ['semantic', 'Semantic'], ['occupancy', 'Occupancy'], ['camera', 'Front camera'], ['debug', 'Debug'],
 ];
 const SurveyPilot = lazy(() => import('./SurveyPilot.jsx'));
+const CameraTrial = lazy(() => import('./CameraTrial.jsx'));
 const radToDeg = radians => radians * 180 / Math.PI;
 const hasCapturedMap = frame => ['GAZEBO', 'NAV2_PLAN'].includes(frame?.provenance);
 const clock = (milliseconds = 0) => {
@@ -410,7 +411,7 @@ function App() {
     </div></header>
     <main>
       <div className="page-head">
-        <div><h1>Environment</h1>
+        <div><div className="environment-title"><h1>Environment</h1><a className="survey-link" href="/cameras">Camera trial</a></div>
           <p className="mono"><span>{streamOnly ? snapshot?.site ?? 'Waiting for ROS' : captured ? option.siteName ?? 'Small warehouse' : environment?.name ?? 'Waiting for source'}</span>
             <b>/</b>{streamOnly ? 'ROS observation' : snapshotOnly ? 'Nav2 plan capture' : captured ? 'Gazebo route capture' : environment?.zone ?? 'Perception workspace'}</p>
         </div>
@@ -458,8 +459,8 @@ function App() {
   </>;
 }
 
+const pages = { '/survey': SurveyPilot, '/cameras': CameraTrial };
+const Page = pages[window.location.pathname] ?? App;
 createRoot(document.getElementById('root')).render(
-  window.location.pathname === '/survey'
-    ? <Suspense fallback={<main><p role="status">Loading site survey…</p></main>}><SurveyPilot /></Suspense>
-    : <App />,
+  <Suspense fallback={<main><p role="status">Loading console…</p></main>}><Page /></Suspense>,
 );

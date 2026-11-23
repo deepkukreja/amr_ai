@@ -1,0 +1,49 @@
+.camera-trial { max-width: 1340px; padding: 0 clamp(10px, 2vw, 26px) 24px; }
+.trial-heading { display: flex; align-items: start; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; padding: 22px 0 15px; }
+.trial-heading p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+.trial-toolbar { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 10px; }
+.trial-layout-switch { display: flex; flex-wrap: wrap; gap: 2px; padding: 3px; border: 1px solid var(--rule); background: var(--paper); }
+.trial-layout-switch button { background: transparent; border: 1px solid transparent; padding: 5px clamp(6px, 1vw, 13px); font-size: 12px; }
+.trial-layout-switch button[aria-pressed="true"] { color: var(--accent); background: var(--accent-soft); border-color: var(--rule); font-weight: 650; }
+.trial-toolbar label, .trial-link-controls label { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); }
+.trial-toolbar select, .trial-link-controls select { border: 1px solid var(--rule); background: var(--paper); padding: 5px 7px; min-height: 32px; color: var(--ink); }
+.trial-views { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.trial-views[data-layout="focus"] { grid-template-columns: minmax(0, 1fr) minmax(210px, 25%); align-items: stretch; }
+.trial-card { min-width: 0; display: flex; flex-direction: column; border: 1px solid var(--rule); background: var(--paper); }
+.trial-card[data-primary="true"] { border-color: #839bad; }
+.trial-views[data-layout="focus"] .trial-card[data-primary="true"] { grid-row: span 3; }
+.trial-feed-head { min-height: 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1px 6px; padding: 3px 8px; }
+.trial-feed-head button { text-align: left; padding: 2px 0; border: 0; background: transparent; color: var(--accent); font-weight: 680; font-size: 13px; }
+.trial-feed-status { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 10px; }
+.trial-card[data-status="ready"] .trial-feed-status .small-dot { color: #33775e; }
+.trial-card[data-status="stale"] .trial-feed-status { color: var(--warning-ink); }
+.trial-video {
+  position: relative; width: 100%; display: block; min-width: 0; aspect-ratio: 16 / 9;
+  padding: 0; border: 0; background: #142331; color: #e4eef5; overflow: hidden;
+}
+.trial-views[data-layout="focus"] .trial-card[data-primary="true"] .trial-video { flex: 1; }
+.trial-video canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: contain; }
+.trial-feed-message { position: absolute; inset: 0; display: grid; place-content: center; padding: 6px; font-size: 12px; }
+.trial-footer { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 8px; margin-top: 10px; }
+.trial-controls, .trial-map { border: 1px solid var(--rule); background: var(--paper); min-width: 0; }
+.trial-player {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding: 6px 8px; min-height: 45px;
+  margin-bottom: 8px; background: var(--paper); border: 1px solid var(--rule);
+}
+.trial-player input { flex: 1; min-width: 65px; accent-color: var(--accent); }
+.trial-time, .trial-link-note { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.trial-link-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 8px 9px 11px; }
+.trial-map span { display: block; padding: 5px 8px; color: var(--muted); font-size: 11px; }
+.trial-map canvas { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #142331; }
+.trial-error { border: 1px solid #d6a87d; color: var(--warning-ink); padding: 7px 9px; }
+
+@media (max-width: 760px) {
+  .trial-views[data-layout="focus"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .trial-views[data-layout="focus"] .trial-card[data-primary="true"] { grid-area: 1 / 1 / 2 / -1; }
+  .trial-feed-head { padding: 3px 5px; }
+  .trial-footer { grid-template-columns: minmax(0, 1fr); }
+  .trial-map { width: min(100%, 230px); }
+}
+@media (max-width: 480px) {
+  .trial-views[data-layout="focus"] .trial-card:not([data-primary="true"]) .trial-rate { display: none; }
+}

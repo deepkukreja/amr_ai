@@ -115,7 +115,7 @@ function makeEnvironment(scene, environment) {
   return { racks, walls };
 }
 
-function makeRobot(geometry) {
+export function makeRobot(geometry) {
   const group = new THREE.Group();
   const { wheelbase, rearTrack, tireRadius, tireWidth } = geometry;
   const rubber = standard('#171d26', 0.94, 0);

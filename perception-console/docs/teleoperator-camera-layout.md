@@ -12,4 +12,12 @@ For the media prototype, use independently timestamped video tracks with a highe
 2. Compare front/rear, focused-plus-thumbnails and four equal tiles on the same replay of a reverse dock, a doorway with cross-traffic and a close pass beside the payload. Measure time to identify the hazard, missed hazards, time to switch views, and operator errors.
 3. Repeat with reduced bandwidth and with one frozen feed. Measure capture-to-display delay, frame age and recovery per feed. Qualify the design only for the tasks, visibility and link conditions measured.
 
-The current implementation covers the single front camera and separate map, depth and ranged observations. The four-view proposal is a design for a read-only simulation or replay trial.
+## Replay trial
+
+Open **Camera trial** in the perception console or visit `/cameras`. **Focused**, **Front and rear**, and **Four cameras** share the same 12-second clips, playhead and map. Select **Reverse dock**, **Doorway crossing**, or **Close pass**. The clips show a simulated loading-yard approach, a person crossing the warehouse entrance, and a loaded robot passing a pallet. Each pane is rendered from its own directional mount on the same robot. The four poses are representative fixture geometry for the layout comparison.
+
+Choose **Constrained** to reduce the image size and frame-rate caps of the auxiliary feeds and increase their simulated delay. The focused view retains a higher cap and a smaller delay. **Interrupt feed** freezes one source while replay runs. After 800 ms without a new delivery, the tile marks the interruption and hides the old image. Selecting **None** resumes the feed. The controls replay preset motion and only affect what the operator sees.
+
+Use **Pause** and the replay slider to show the same moment across layouts. The frame-age badges report simulated acquisition age, and the map shows the current replay pose. The delivery profiles model local frame scheduling and impairment. Encoded video bitrate, WAN latency, visibility around the actual loaded chassis, and comparative operator performance remain measurement tasks from the decision test above.
+
+Browser checks confirmed four distinct rendered views, unchanged acquisition timestamps when switching layouts at a paused Normal-profile frame, and focused-feed priority under the Constrained profile. In the constrained grid, the selected rear feed rendered at 448 × 252 while the left preview rendered at 256 × 144. Interrupting left hid its stale image while rear kept advancing, and resuming restored the left feed. The production build, 23 console tests, and desktop and phone-width checks passed.

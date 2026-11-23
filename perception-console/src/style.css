@@ -68,6 +68,7 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 
 main { width: 100%; padding: 0 22px; max-width: 1980px; margin: auto; }
 .page-head { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 19px 1px 18px; }
+.environment-title { display: flex; align-items: center; gap: 10px; }
 h1 { font-size: 30px; line-height: 1.11; letter-spacing: -0.035em; margin: 0; font-weight: 690; }
 .page-head p { display: flex; gap: 10px; margin: 6px 0 0; color: var(--muted); font-size: 12px; }
 .page-head p b { color: #66809a; font-weight: 400; }
