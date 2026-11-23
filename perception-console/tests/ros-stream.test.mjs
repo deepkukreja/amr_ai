@@ -20,6 +20,32 @@ const snapshot = {
 };
 
 const depth = { frame: 'depth_optical', stampMs: 995, width: 2, height: 1, mm16: '6AMAAA==' };
+const objects = { frame: 'map', stampMs: 985, items: [
+  { classId: 'person', score: 0.95, rangeM: 2.433, position: [1.4, 0.9, 0.58] },
+] };
+
+test('ranged detections require a fresh map frame and valid evidence, without changing other layers', () => {
+  assert.equal(acceptWorld(snapshot).objects, null);
+  const valid = acceptWorld({ ...snapshot, objects });
+  assert.deepEqual(valid.objects, objects);
+  assert.deepEqual(valid.tracks, []);
+  assert.deepEqual(acceptWorld({ ...snapshot, objects: { ...objects, items: [] } }).objects.items, []);
+  for (const invalid of [
+    { ...objects, frame: 'odom' },
+    { ...objects, stampMs: 1001 },
+    { ...objects, items: [{ ...objects.items[0], rangeM: -1 }] },
+    { ...objects, items: [{ ...objects.items[0], score: 1.2 }] },
+    { ...objects, items: [{ ...objects.items[0], position: [1, 0, Infinity] }] },
+  ]) {
+    const result = acceptWorld({ ...snapshot, objects: invalid,
+      sensors: [{ id: 'objects', name: 'Ranged objects', status: 'fresh' }] });
+    assert.equal(result.objects, null);
+    assert.equal(result.sensors[0].status, 'unregistered');
+    assert.deepEqual(result.camera, valid.camera);
+    assert.deepEqual(result.cloud, valid.cloud);
+  }
+  assert.equal(acceptWorld({ ...snapshot, stampMs: 2200, objects }).objects, null);
+});
 
 test('depth is optional, keeps its own optical frame and ages independently of RGB', () => {
   assert.equal(acceptWorld(snapshot).depth, null);
@@ -84,7 +110,7 @@ test('the HTTP stream skips an old file and delivers the next advancing snapshot
   const response = await fetch(`${base}/api/v1/world?scenario=ros-world`, { signal: AbortSignal.timeout(4500) });
   const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
   await delay(500);
-  await writeFile(file, JSON.stringify({ ...snapshot, sequence: 2, depth }));
+  await writeFile(file, JSON.stringify({ ...snapshot, sequence: 2, depth, objects }));
   let raw = '';
   while (!raw.includes('\n\n')) raw += (await reader.read()).value;
   const frame = JSON.parse(raw.split('\ndata: ')[1].trim());
@@ -92,4 +118,5 @@ test('the HTTP stream skips an old file and delivers the next advancing snapshot
   assert.equal(frame.sequence, 2);
   assert.deepEqual(frame.cloud.points, snapshot.cloud.points);
   assert.deepEqual(frame.depth, depth);
+  assert.deepEqual(frame.objects, objects);
 });

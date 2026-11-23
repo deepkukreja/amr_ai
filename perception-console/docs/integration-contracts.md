@@ -17,6 +17,8 @@ Single Nav2 planning captures also use replay presentation. They retain the ROS 
 
 The optional ROS `depth` channel carries `frame`, `stampMs`, `width`, `height` and `mm16`. The frame is the depth image's optical frame. The base64 buffer stores the complete row-major image as little-endian unsigned 16-bit optical depth in millimetres, with zero for unknown. Each dimension is at most 160 pixels. Depth has an independent one-second freshness limit and clears when the browser loses the stream. This preview is sampled in camera image space. RGB association and map registration require their own calibration and time checks.
 
+The optional ROS `objects` channel contains `frame`, `stampMs` and up to 32 current observations in `items`. Each item has `classId`, `score`, a timestamp-registered `position` in the map frame, and `rangeM`, the horizontal distance from the robot base origin at the measurement timestamp. It uses the producer's 3D bounding-box centre as a point observation. A fresh empty array means the producer yielded no usable ranged detections. A missing or expired layer is null. This channel has an independent one-second freshness limit.
+
 ## Upstream topic and model boundaries
 
 Topic profiles are launch-specific and remappable. The targets below are starting budgets in steady operation. Verify each rate, frame, QoS and topic publisher from the actual graph before adopting a profile.

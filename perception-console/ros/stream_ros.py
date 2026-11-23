@@ -89,6 +89,7 @@ class StreamReader(WorldReader):
         super().__init__(args.map_topic, args.plan_topic, args.base_frame)
         self.args = args
         self.depth_topic = getattr(args, "depth_topic", None)
+        self.objects_topic = getattr(args, "objects_topic", None)
         self.session = uuid.uuid4().hex
         self.sequence = 0
         self.last_stamp = 0
@@ -100,12 +101,16 @@ class StreamReader(WorldReader):
         self.images = deque(maxlen=4)
         self.calibrations = deque(maxlen=4)
         self.depth_images = deque(maxlen=4)
+        self.detections = deque(maxlen=4)
         self.create_subscription(PointCloud2, args.lidar_topic, self.cache(self.clouds), qos_profile_sensor_data)
         if args.camera_topic:
             self.create_subscription(Image, args.camera_topic, self.cache(self.images), qos_profile_sensor_data)
             self.create_subscription(CameraInfo, args.camera_info, self.cache(self.calibrations), qos_profile_sensor_data)
         if self.depth_topic:
             self.create_subscription(Image, self.depth_topic, self.cache(self.depth_images), qos_profile_sensor_data)
+        if self.objects_topic:
+            from vision_msgs.msg import Detection3DArray
+            self.create_subscription(Detection3DArray, self.objects_topic, self.cache(self.detections), 5)
 
     @staticmethod
     def cache(queue):
@@ -216,12 +221,49 @@ class StreamReader(WorldReader):
                         "stampMs": milliseconds(message.header.stamp)}
         return None
 
+    def objects(self, frame, now):
+        for message in self.recent(self.detections, now, 1000):
+            source = message.header.frame_id
+            if not source:
+                continue
+            at = Time.from_msg(message.header.stamp)
+            to_map = self.get_tf(frame, source, at)
+            to_base = self.get_tf(self.base, source, at)
+            if to_map is None or to_base is None:
+                continue
+            output = []
+            for detection in message.detections[:32]:
+                child = detection.header
+                if ((child.frame_id and child.frame_id != source)
+                    or ((child.stamp.sec or child.stamp.nanosec) and child.stamp != message.header.stamp)):
+                    continue
+                if not detection.results:
+                    continue
+                label = detection.results[0].hypothesis
+                center = detection.bbox.center.position
+                if not (label.class_id.strip() and len(label.class_id) <= 64 and 0 <= label.score <= 1
+                        and all(map(math.isfinite, (center.x, center.y, center.z)))):
+                    continue
+                point = np.array([[center.x, center.y, center.z]])
+                try:
+                    relative = transform_points(point, to_base.transform)[0]
+                    mapped = transform_points(point, to_map.transform)[0]
+                except ValueError:
+                    continue
+                distance = math.hypot(relative[0], relative[1])
+                if math.isfinite(distance) and distance <= 30 and np.isfinite(mapped).all():
+                    output.append({"classId": label.class_id, "score": label.score,
+                                   "rangeM": round(distance, 3), "position": mapped.round(3).tolist()})
+            if not message.detections or output:
+                return {"frame": frame, "stampMs": milliseconds(message.header.stamp), "items": output}
+        return None
+
     def snapshot(self):
         now = self.get_clock().now().nanoseconds // 1_000_000
         if now < self.last_stamp:
             self.session, self.sequence = uuid.uuid4().hex, 0
             self.pose_stamp, self.pose_received = 0, 0
-            for buffer in (self.plans, self.clouds, self.images, self.calibrations, self.depth_images):
+            for buffer in (self.plans, self.clouds, self.images, self.calibrations, self.depth_images, self.detections):
                 buffer.clear()
         self.last_stamp = now
         if not now or self.map_data is None:
@@ -244,6 +286,7 @@ class StreamReader(WorldReader):
         cloud = self.cloud(frame, now)
         camera = self.camera(frame, now) if self.args.camera_topic else None
         depth = self.depth(now) if self.depth_topic else None
+        objects = self.objects(frame, now) if self.objects_topic else None
 
         def health(sensor_id, name, sample, queue=None, age=1000):
             stamp = sample["stampMs"] if sample else None
@@ -258,13 +301,16 @@ class StreamReader(WorldReader):
                    health("lidar", "LiDAR", cloud, self.clouds), health("rgbd", "Front camera", camera, self.images)]
         if self.depth_topic:
             sensors.append(health("depth", "Depth camera", depth, self.depth_images))
+        if self.objects_topic:
+            sensors.append(health("objects", "Ranged detections", objects, self.detections))
         self.sequence += 1
         return {
             "version": 1, "session": self.session, "sequence": self.sequence, "site": self.args.site,
             "stampMs": now, "frame": frame, "source": "ROS_SENSOR_FIXTURE" if self.args.fixture else "ROS_MONITOR",
             "clock": "ROS_SIM" if self.get_parameter("use_sim_time").value else "ROS_SYSTEM",
             "mode": self.args.mode.upper(), "robotModel": self.args.robot_model, "occupancy": self.map_data,
-            "pose": pose, "plan": plan, "cloud": cloud, "camera": camera, "depth": depth, "sensors": sensors,
+            "pose": pose, "plan": plan, "cloud": cloud, "camera": camera, "depth": depth,
+            "objects": objects, "sensors": sensors,
         }
 
 
@@ -299,6 +345,7 @@ def main():
     parser.add_argument("--camera-topic")
     parser.add_argument("--camera-info")
     parser.add_argument("--depth-topic", help="Optional REP-118 depth image in its source optical frame")
+    parser.add_argument("--objects-topic", help="Optional calibrated Detection3DArray input")
     parser.add_argument("--robot-model", choices=("d3-prototype",))
     args, ros_args = parser.parse_known_args()
     if bool(args.camera_topic) != bool(args.camera_info):

@@ -151,7 +151,8 @@ function WorldView({ profiles, environment, snapshot, view, setView, selected, t
           <span><i className="legend-square occupied" /> Occupied</span>
           <span><i className="legend-square unknown" /> Unknown</span>
           {nav2 && snapshot?.nav.planned.length > 0 && <span><i className="plan-ribbon" /> Nav2 planned path</span>}
-          {stream && snapshot.cloud && <span><i className="lidar-returns" /> LiDAR returns</span>}
+          {stream && snapshot.cloud && (view === 'follow' || showCloud) && <span><i className="lidar-returns" /> LiDAR returns</span>}
+          {stream && snapshot.objects?.items.length > 0 && view !== 'cloud' && <span><i className="ranged-return" /> Ranged detection</span>}
           {snapshot?.provenance === 'GAZEBO' && <span><i className="history" /> Gazebo truth history</span>}
         </> : <>
           <span><i className="planned" /> Planned route</span>
@@ -229,6 +230,22 @@ function TrackList({ frame, selected, setSelected }) {
   </section>;
 }
 
+function RangedObjects({ objects }) {
+  return <section className="inspector">
+    <div className="panel-header"><h2>Ranged detections</h2></div>
+    {objects?.items.length > 0 ? <div className="object-table-wrap">
+      <table className="object-table">
+        <thead><tr><th>Class</th><th>Range from robot</th><th>Class score</th></tr></thead>
+        <tbody>{objects.items.map((item, index) => <tr key={index}>
+          <td className="detection-class">{item.classId}</td>
+          <td>{item.rangeM.toFixed(2)} m</td>
+          <td>{Math.round(item.score * 100)}%</td>
+        </tr>)}</tbody>
+      </table>
+    </div> : <p className="empty">{objects ? 'No ranged detections' : 'Ranged detections unavailable'}</p>}
+  </section>;
+}
+
 const sensorIcons = { lidar: Layers, rgbd: Video, odom: Waypoints, steer: Activity };
 
 function Diagnostics({ frame, transport }) {
@@ -255,11 +272,13 @@ function Diagnostics({ frame, transport }) {
 function Inspector({ frame, selected, setSelected, transport }) {
   const [tab, setTab] = useState('Overview');
   const faults = frame?.sensors.filter(sensor => sensor.status !== 'fresh').length ?? 0;
+  const ranged = frame?.provenance === 'ROS_STREAM';
+  const objectCount = ranged ? frame.objects?.items.length ?? 0 : frame?.tracks.length ?? 0;
   return <aside className="panel side-rail" aria-label="Robot telemetry" data-offline={transport === 'offline'}>
     <div className="inspector-switch" aria-label="Robot information">
       {['Overview', 'Objects', 'Diagnostics'].map(section => <button key={section} type="button" aria-pressed={tab === section}
         onClick={() => setTab(section)}>{section}{
-          section === 'Objects' && frame?.tracks.length > 0 ? ` ${frame.tracks.length}` : section === 'Diagnostics' && faults > 0 ? ` ${faults}` : ''
+          section === 'Objects' && objectCount > 0 ? ` ${objectCount}` : section === 'Diagnostics' && faults > 0 ? ` ${faults}` : ''
         }</button>)}
     </div>
     {tab === 'Overview' && <>
@@ -274,7 +293,8 @@ function Inspector({ frame, selected, setSelected, transport }) {
         {!frame && <p className="empty">Awaiting diagnostics</p>}
       </section>
     </>}
-    {tab === 'Objects' && <TrackList frame={frame} selected={selected} setSelected={setSelected} />}
+    {tab === 'Objects' && (ranged ? <RangedObjects objects={frame.objects} />
+      : <TrackList frame={frame} selected={selected} setSelected={setSelected} />)}
     {tab === 'Diagnostics' && <Diagnostics frame={frame} transport={transport} />}
   </aside>;
 }
@@ -326,7 +346,8 @@ function App() {
   const streamOnly = option?.streamOnly;
   const world = replay ? replayFrame || null : active?.scenario === scenario ? active : null;
   const snapshot = streamOnly && state === 'offline' && world ? {
-    ...world, cloud: null, camera: null, depth: null, robot: { ...world.robot, pose: null, localization: { status: 'unavailable' } },
+    ...world, cloud: null, camera: null, depth: null, objects: null,
+    robot: { ...world.robot, pose: null, localization: { status: 'unavailable' } },
     nav: { ...world.nav, state: 'Plan unavailable', planned: [] },
   } : world;
   const environment = config?.environments[option?.site];

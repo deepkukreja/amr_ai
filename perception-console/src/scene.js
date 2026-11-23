@@ -351,10 +351,13 @@ export function createScene(host, labels, environment, profiles) {
   const cloud = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({
     color: '#5be8ff', map: dot, alphaTest: 0.4, size: 0.065, transparent: true, opacity: 0.65,
   }));
+  const ranged = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({
+    color: '#d6a4ff', map: dot, alphaTest: 0.4, size: 11, sizeAttenuation: false, fog: false,
+  }));
   const grid = new THREE.InstancedMesh(boxGeometry, new THREE.MeshBasicMaterial({ vertexColors: false, transparent: true, opacity: 0.86 }), 4096);
   grid.frustumCulled = false;
   grid.count = 0;
-  scene.add(planned, routeRibbon, planCenter, local, history, prediction, heading, cloud, grid);
+  scene.add(planned, routeRibbon, planCenter, local, history, prediction, heading, cloud, ranged, grid);
   const camera = new THREE.PerspectiveCamera(53, 1, 0.055, 100);
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
@@ -430,6 +433,7 @@ export function createScene(host, labels, environment, profiles) {
     walls.visible = mode === 'follow';
     grid.visible = mode === 'occupancy' || recorded;
     cloud.visible = Boolean(frame?.cloud) && ['follow', 'cloud', 'debug'].includes(mode);
+    ranged.visible = Boolean(frame?.objects?.items.length) && mode !== 'cloud';
     for (const { mesh } of tracks.values()) {
       mesh.visible = mode !== 'cloud';
       mesh.userData.model.visible = !['occupancy', 'debug', 'semantic'].includes(mode);
@@ -493,6 +497,9 @@ export function createScene(host, labels, environment, profiles) {
       [pose.x, pose.y, 0], [pose.x + Math.cos(pose.yaw) * 0.98, pose.y + Math.sin(pose.yaw) * 0.98, 0],
     ] : [], 0.045);
     setPoints(cloud, (frame.cloud?.points ?? []).map(world));
+    if (frame.objects?.items.length) {
+      setPoints(ranged, frame.objects.items.map(({ position: [x, y] }) => world([x, y, 0.08])));
+    }
     const seen = new Set();
     for (const track of frame.tracks) {
       seen.add(track.id);

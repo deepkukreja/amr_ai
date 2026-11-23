@@ -16,6 +16,15 @@ function acceptDepth(depth, now) {
   return depth;
 }
 
+function acceptObjects(layer, frame, now) {
+  if (!layer || layer.frame !== frame || !fresh(layer.stampMs, now, 1000)
+    || !Array.isArray(layer.items) || layer.items.length > 32) return null;
+  return layer.items.every(item => typeof item?.classId === 'string' && item.classId.trim() && item.classId.length <= 64
+    && Number.isFinite(item.score) && item.score >= 0 && item.score <= 1
+    && Number.isFinite(item.rangeM) && item.rangeM >= 0 && item.rangeM <= 30
+    && tuple(item.position, 3)) ? layer : null;
+}
+
 export function sequenceGate() {
   let marker;
   return frame => {
@@ -50,6 +59,7 @@ export function acceptWorld(input) {
   const plan = registered(input.plan, 3000, 2000) ? input.plan : null;
   const cloud = registered(input.cloud, 1000, 1000) ? input.cloud : null;
   const depth = acceptDepth(input.depth, now);
+  const objects = acceptObjects(input.objects, input.frame, now);
   const image = input.camera;
   let camera = null;
   if (image && typeof image.frame === 'string' && fresh(image.stampMs, now, 1000)
@@ -66,6 +76,7 @@ export function acceptWorld(input) {
   if (input.cloud && !cloud) rejected.add('lidar');
   if (input.camera && !camera) rejected.add('rgbd');
   if (input.depth && !depth) rejected.add('depth');
+  if (input.objects && !objects) rejected.add('objects');
   if (input.pose && !pose) rejected.add('localization');
   if (input.plan && !plan) rejected.add('plan');
   const sensors = (Array.isArray(input.sensors) ? input.sensors : []).slice(0, 8).filter(sensor => typeof sensor?.id === 'string'
@@ -73,7 +84,7 @@ export function acceptWorld(input) {
     .map(sensor => ({ ...sensor, ...(rejected.has(sensor.id) ? { status: 'unregistered', ageMs: null } : {}) }));
   const d3 = input.robotModel === 'd3-prototype' || input.source === 'ROS_SENSOR_FIXTURE';
   return {
-    ...input, pose, plan, cloud, camera, depth, sensors, version: 1, provenance: 'ROS_STREAM', scenario: rosWorld.id,
+    ...input, pose, plan, cloud, camera, depth, objects, sensors, version: 1, provenance: 'ROS_STREAM', scenario: rosWorld.id,
     robot: {
       name: d3 ? 'D3 · Design profile' : 'ROS robot', modelId: d3 ? 'd3-prototype' : null, pose,
       speed: null, steering: null, battery: null, localization: { status: pose ? 'transform available' : 'unavailable', varianceM2: null },
