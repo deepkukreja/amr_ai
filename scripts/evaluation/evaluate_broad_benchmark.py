@@ -1,6 +1,7 @@
 """Compare pinned AMR checkpoints against a frozen mixed-source development set."""
 import argparse
 from collections import Counter, defaultdict
+from dataclasses import replace
 import hashlib
 import json
 import math
@@ -25,6 +26,22 @@ WAREHOUSE = {
     "cart_pallet_jack": ("cart_or_pallet_jack",), "rack_shelf": ("rack_or_shelf",),
 }
 MAPPINGS = {"general": COCO, "reference": ROAD, "candidate": ROAD, "warehouse": WAREHOUSE}
+RIDER_VEHICLE = {"pedestrian": ("human", "pedestrian"), "rider": ("human", "rider"),
+                 "bicycle": ("bicycle",), "motorcycle": ("motorcycle",)}
+
+
+def benchmark_profiles(root, checkpoint):
+    profiles = make_profiles(root)
+    mappings = dict(MAPPINGS)
+    if checkpoint is not None:
+        path = checkpoint.resolve()
+        profiles["rider_vehicle"] = replace(
+            profiles["candidate"], id="rider_vehicle", checkpoint=path,
+            fingerprint=hashlib.sha256(path.read_bytes()).hexdigest(),
+            names=dict(enumerate(RIDER_VEHICLE)), thresholds=dict.fromkeys(RIDER_VEHICLE, .25),
+        )
+        mappings["rider_vehicle"] = RIDER_VEHICLE
+    return profiles, mappings
 
 
 def field_scoring_frame(frame):
@@ -86,6 +103,8 @@ def main():
     parser.add_argument("--imgsz", type=int, choices=(960, 1280), default=960)
     parser.add_argument("--device", choices=["0", "cpu"], default="0")
     parser.add_argument("--allow-field-holdout", action="store_true")
+    parser.add_argument("--rider-vehicle-checkpoint", type=Path,
+                        help="Include a local four-class rider and two-wheeler research checkpoint")
     args = parser.parse_args()
     if args.output.exists():
         raise ValueError("Refuse to replace an existing evaluation report")
@@ -120,8 +139,9 @@ def main():
         report["ground_truth_support"][cohort] = dict(Counter(
             obj["label"] for frame in records for obj in frame["boxes"]
         ))
-    for key, mapping in MAPPINGS.items():
-        profile = make_profiles(ROOT)[key]
+    profiles, mappings = benchmark_profiles(ROOT, args.rider_vehicle_checkpoint)
+    for key, mapping in mappings.items():
+        profile = profiles[key]
         check_checkpoint(profile)
         model = YOLO(str(profile.checkpoint))
         validate_model_names(profile, model.names)
