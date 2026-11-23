@@ -31,3 +31,5 @@ Select checkpoints and confidence thresholds on tuning clips. Use rider recall a
 For a research screening decision, aim for at least a 10 percentage point increase in rider recall at the existing model's unmatched prediction rate, and check pedestrian recall and vehicle precision for regressions. Agree a meaningful tolerance on tuning data before opening the holdout. Aim for at least 100 rider instances across varied held-out clips. Report weaker class and lighting slices with their actual support and distinguish exploratory gains from measured readiness. Any change to the runtime profile would require its own integrated validation.
 
 The immediate implementation task is the 40-frame four-class label audit and the benchmark access/overlap check. Use that evidence to choose the first training batch and protect a reserved Indian cohort before model selection.
+
+The [40-frame audit report](indian_rider_label_audit.md) records the implemented sample, paired results, class coverage, and independent benchmark access issue.
