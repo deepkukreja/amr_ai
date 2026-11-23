@@ -83,6 +83,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--imgsz", type=int, choices=(960, 1280), default=960)
     parser.add_argument("--device", choices=["0", "cpu"], default="0")
     parser.add_argument("--allow-field-holdout", action="store_true")
     args = parser.parse_args()
@@ -108,7 +109,7 @@ def main():
         "scorer_sha256": hashlib.sha256(Path(__file__).with_name("broad_benchmark.py").read_bytes()).hexdigest(),
         "data": dict(Counter(frame["cohort"] for frame in frames.values())),
         "ground_truth_support": {},
-        "protocol": {"confidence": .25, "prediction_floor": .01, "iou": .5, "nms_iou": .7, "imgsz": 960,
+        "protocol": {"confidence": .25, "prediction_floor": .01, "iou": .5, "nms_iou": .7, "imgsz": args.imgsz,
                      "nms": True, "precision": "FP32", "augment": False, "batch": 1,
                      "ap": "all-point interpolated from confidence-ranked detections above prediction floor"},
         "device": torch.cuda.get_device_name(device) if device != "cpu" else "CPU",
@@ -132,7 +133,7 @@ def main():
         for index, (source, frame) in enumerate(frames.items()):
             synchronize(torch, device)
             started = time.perf_counter()
-            result = model.predict(source, imgsz=960, conf=.01, iou=.7, nms=True, max_det=300,
+            result = model.predict(source, imgsz=args.imgsz, conf=.01, iou=.7, nms=True, max_det=300,
                                    device=device, quantize=None, augment=False, classes=ids, verbose=False)[0]
             boxes = result.boxes.cpu()
             predictions = [

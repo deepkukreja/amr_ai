@@ -10,6 +10,7 @@ from zipfile import ZipFile
 
 CLASSES = {5: "forklift", 11: "pallet_truck", 7: "pallet", 3: "small_load_carrier", 10: "stillage"}
 TRAIN_CAP = 68
+EQUIPMENT_IDS = {5, 11}
 
 
 def capture_split(member):
@@ -31,7 +32,19 @@ def yolo_box(box, width, height):
     return (x + w / 2) / width, (y + h / 2) / height, w / width, h / height
 
 
-def prepare(source, output):
+def sample_training(members, objects, include_equipment_positives):
+    count = len(members)
+    if count <= TRAIN_CAP:
+        return members
+    selected = {(2 * i + 1) * count // (2 * TRAIN_CAP) for i in range(TRAIN_CAP)}
+    if include_equipment_positives:
+        for i, (_, image) in enumerate(members):
+            if any(box["category_id"] in EQUIPMENT_IDS for box in objects.get(image["id"], ())):
+                selected.add(i)
+    return [members[i] for i in sorted(selected)]
+
+
+def prepare(source, output, include_equipment_positives=False):
     labels = json.loads((source / "loco-all-v1.json").read_bytes())
     if {c["id"]: c["name"] for c in labels["categories"]} != CLASSES:
         raise ValueError("Unexpected LOCO class mapping")
@@ -58,9 +71,8 @@ def prepare(source, output):
     with ZipFile(source / "dataset.zip") as archive:
         for (split, _), members in sorted(groups.items()):
             members.sort()
-            if split == "train" and len(members) > TRAIN_CAP:
-                count = len(members)
-                members = [members[(2 * i + 1) * count // (2 * TRAIN_CAP)] for i in range(TRAIN_CAP)]
+            if split == "train":
+                members = sample_training(members, objects, include_equipment_positives)
             images_dir = output / "images" / split
             labels_dir = output / "labels" / split
             images_dir.mkdir(parents=True, exist_ok=True)
@@ -99,8 +111,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--include-equipment-positives", action="store_true",
+                        help="Also keep all forklift and pallet-truck images in training captures")
     args = parser.parse_args()
-    prepare(args.source.resolve(), args.output.resolve())
+    prepare(args.source.resolve(), args.output.resolve(), args.include_equipment_positives)
 
 
 if __name__ == "__main__":

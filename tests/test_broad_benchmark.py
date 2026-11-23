@@ -57,3 +57,13 @@ def test_open_images_test_split_preserves_attribution_and_coverage(tmp_path, mon
     assert frame["cohort"] == "open_images_v5_test"
     assert frame["coverage"] == ["dog"]
     assert (frame["author"], frame["source"]) == ("Author", "https://example.org/photo")
+
+
+def test_urbansyn_preserves_distinct_rider_and_motorcycle_boxes():
+    from scripts.data.freeze_urbansyn_pilot import target_boxes
+
+    source = [{"label": "rider", "bbox": dict(xMin=512, yMin=256, xMax=1024, yMax=768)},
+              {"label": "motorcycle", "bbox": dict(xMin=512, yMin=512, xMax=1536, yMax=1024)}]
+    assert target_boxes(source) == [("rider", (.25, .25, .5, .75)),
+                                    ("human", (.25, .25, .5, .75)),
+                                    ("motorcycle", (.25, .5, .75, 1.))]

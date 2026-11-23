@@ -120,3 +120,86 @@ The two sites scored 9.5% and 5.5% mAP50-95, respectively. Site 4 contributes fo
 The result establishes a reproducible training baseline. Pallets led on both sites, and forklifts and stillages transferred poorly. Keep the candidate for research. For the next candidate, increase diverse forklift and pallet-truck support in the training groups and choose image size and training duration on the tuning split. Treat these two warehouse scores as historical baselines and reserve another site for a later independent check if they start informing model choices.
 
 Local checkpoint SHA-256 `0b1d2236b0cef1006ffd2e65838a865ca455cac551ed629eb216d60f4a41ae7e`. Starting COCO weights SHA-256 `646f8bc3fe0a656803d95c294f7852321748cb29d13466a1af8862e2db384a1b`.
+
+## LOCO follow-up with more equipment examples
+
+The follow-up keeps every frame from the first training set and adds the remaining publisher-labeled forklift and pallet-truck frames from the same training recordings. It uses the same COCO initialization, seed, six epochs, 640 px input and optimizer settings. There are more optimizer updates per epoch because the training set is larger. This comparison measures the expanded recipe as a whole. The extra frames add examples within known sites.
+
+| Training support | Original | Expanded |
+|---|---:|---:|
+| Training images | 603 | 1,297 |
+| Images with forklifts | 68 | 300 |
+| Forklift boxes | 85 | 416 |
+| Images with pallet trucks | 194 | 764 |
+| Pallet-truck boxes | 395 | 1,569 |
+
+The 219 tuning frames and both site evaluation sets match the first pilot by image hash and label hash. Verified all 3,793 expanded image-label pairs and found no exact image duplicates across splits. Best tuning mAP50-95 rose from 5.7% to 11.3%.
+
+| Metric | Site 1 original | Site 1 expanded | Site 4 original | Site 4 expanded |
+|---|---:|---:|---:|---:|
+| Forklift AP50 | 0.4% | 0.6% | 7.1% | 16.1% |
+| Pallet truck AP50 | 20.3% | 28.0% | 18.1% | 24.9% |
+| Pallet AP50 | 43.3% | 51.5% | 35.3% | 43.7% |
+| Small load carrier AP50 | 26.5% | 33.7% | No examples | No examples |
+| Stillage AP50 | 26.5% | 34.3% | <0.1% | 1.9% |
+| Equipment mAP50-95 | 9.5% | 12.7% | 5.5% | 8.4% |
+
+Site 1 has only five forklift boxes. Site 4 has 119. The expanded detector is the stronger warehouse research candidate. Forklift and stillage generalization are still weak, so retain the deployment and demo defaults. A future model should be checked on a warehouse outside LOCO once the repeated site results start guiding model selection.
+
+```bash
+python3 -m scripts.data.prepare_loco_pilot --include-equipment-positives \
+  --source datasets/external/loco_v1 --output datasets/loco_equipment_expanded_v2
+.venv/bin/python -m scripts.training.run_loco_pilot \
+  --dataset datasets/loco_equipment_expanded_v2 --weights weights/yolo26s.pt \
+  --output runs/experiments/loco_equipment_expanded_v2
+```
+
+Manifest SHA-256 `e9dc46edb9f347617c1843ce94030aa5d36ff0a4a1542d97c3bbbab6c3b2dd9f`. Local best checkpoint SHA-256 `6fec5149a5e2d86b0d485a5ce67bd2786fe89f9cd7c2e9a538a6b0ccea2b1994`.
+
+## Crowded-road resolution comparison
+
+The original 960 px results reproduced for all four checkpoints and all four development cohorts. The 1280 px arm uses the same frame labels, checkpoint hashes, 0.25 reporting confidence, 0.50 match IoU, and 0.70 NMS IoU. Both arms use the RTX 4060 laptop GPU in FP32 at batch 1.
+
+| Road candidate metric | 960 px | 1280 px |
+|---|---:|---:|
+| Human matches in scenes with at least four reviewed people | 25 / 52 | 28 / 52 |
+| Unmatched human predictions in those scenes | 20 | 18 |
+| Rider matches in those scenes | 9 / 20 | 8 / 20 |
+| Human matches across all 48 road images | 44 / 88 | 50 / 88 |
+| Unmatched human predictions across all 48 road images | 29 | 37 |
+| Rider matches across all 48 road images | 23 / 41 | 23 / 41 |
+| Mixed-benchmark file-to-detections p50 / p95 | 34.2 / 46.8 ms | 36.5 / 49.7 ms |
+
+Higher resolution helped people in the dense slice. It did not recover more riders at the fixed threshold, and the whole-road slice added eight unmatched human predictions. Keep the default at 960 px and use 1280 px as a development comparison. The timing includes laptop file input and model inference and applies to this run. The reviewed real-road labels cover people and riders. They cannot score bikes and motorcycles as separate vehicles.
+
+```bash
+for size in 960 1280; do
+  .venv/bin/python -m scripts.evaluation.evaluate_broad_benchmark --imgsz "$size" \
+    --manifest datasets/broad_detection_dev_v1/manifest.json \
+    --output "results/local/broad_resolution_${size}_20261123/evaluation.json"
+done
+```
+
+## UrbanSyn rider and two-wheeler diagnostic
+
+UrbanSyn adds publisher boxes for riders, motorcycles, bicycles and pedestrians as separate objects. Its images are computer-generated. The bounded sample uses 36 scenes. Twelve contain a rider and motorcycle, twelve contain a rider and bicycle, and twelve contain at least four pedestrians. Co-occurrence is a selection rule. The benchmark does not assign individual riders to individual vehicles. The publisher applies size and distance cutoffs. The sampler excludes frames with malformed target boxes, cross-checks each chosen annotation against the pinned publisher revision, and scores the labels with supplied boxes. Unboxed instances can still be present in a positive image. [UrbanSyn documentation and terms](https://urbansyn.org/#terms-of-use) · [Pinned publisher archive](https://huggingface.co/datasets/UrbanSyn/UrbanSyn/tree/8599498aceee9072f1e067a4a4efed7f20b11809)
+
+| Diagnostic | Model | Matches |
+|---|---|---:|
+| People, including riders | General COCO | 212 / 543 |
+| Riders | Road candidate | 10 / 52 |
+| Bicycles | General COCO | 13 / 39 |
+| Motorcycles | General COCO | 6 / 17 |
+
+Both traffic checkpoints matched 10 of 52 riders. The low coverage supports getting more two-wheeler training data with distinct human and vehicle labels. This diagnostic is a synthetic baseline and stays outside training. Evaluate a future model on real road recordings with all target objects labeled before drawing conclusions about real-road performance.
+
+```bash
+sample=datasets/external/urbansyn_rider_pilot
+mkdir -p "$sample"
+curl -fL --retry 2 -o "$sample/bbox2d.zip" https://pegaso.citic.udc.es/urbansyn/zip/bbox2d.zip
+.venv/bin/python -m scripts.data.freeze_urbansyn_pilot --archive "$sample/bbox2d.zip" --output "$sample"
+.venv/bin/python -m scripts.evaluation.evaluate_broad_benchmark \
+  --manifest "$sample/manifest.json" --output results/local/urbansyn_rider_pilot/evaluation.json
+```
+
+The label archive SHA-256 is `1127f4b565a7d7cb4aab1d236b144445c9574d2605f95cc879ba0a0f7b414a0f`. The local sample manifest SHA-256 is `0759866e4976ba1bc7eb968b92d39e89e657a79b520e34d7ba9310d5b3bd1ac8`. The source audit excluded 24 frames with invalid target geometry among 7,539 records.
