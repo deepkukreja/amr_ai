@@ -4,6 +4,8 @@
 
 The target is reliable coverage for the objects encountered at our warehouses and outdoor sites. Recognition supplies descriptions for operators and logs. Independently, depth/LiDAR observation and the local motion supervisor handle obstacles and movement decisions. An object can occupy space even when the camera cannot assign a class. An absent or stale camera detection supplies no evidence of clearance. See the [Nav2 obstacle layer](https://docs.nav2.org/rolling/configuration_and_development/configuration_guide/core_servers/costmap_2d/costmap_plugins/obstacle/).
 
+Development starts with public camera data and existing reviewed clips. The [public data plan](public_data_perception_plan.md) records the acquired sources, label coverage, and training order. Physical AMR validation remains a later milestone.
+
 ## What we have
 
 | Checkpoint | What the model or demo exposes today | What still needs measuring |

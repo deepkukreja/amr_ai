@@ -45,7 +45,9 @@ def field_scoring_frame(frame):
 def load_frames(manifest, allow_field_holdout=False):
     data = json.loads(manifest.read_bytes())
     scope = data["scope"]
-    if data["version"] != 1 or scope not in {"development only", "field development", "field holdout"}:
+    if data["version"] != 1 or scope not in {
+        "development only", "public evaluation", "field development", "field holdout"
+    }:
         raise ValueError("Unexpected benchmark format or split")
     if scope == "field holdout" and not allow_field_holdout:
         raise ValueError("Field holdout requires explicit --allow-field-holdout evaluation")

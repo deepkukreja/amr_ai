@@ -32,7 +32,7 @@ def sha(data):
 
 def csv_rows(path):
     with path.open(encoding="utf-8-sig", newline="") as file:
-        return list(csv.DictReader(file))
+        yield from csv.DictReader(file)
 
 
 def record(image, cohort, group, boxes, coverage, **metadata):
@@ -119,38 +119,39 @@ def warehouse_frames():
     return result
 
 
-def download_image(image_id, folder):
+def download_image(image_id, folder, split):
     if not re.fullmatch(r"[0-9a-f]{16}", image_id):
         raise ValueError("Invalid Open Images ID")
     image = folder / (image_id + ".jpg")
     if not image.exists():
-        url = f"https://open-images-dataset.s3.amazonaws.com/validation/{image_id}.jpg"
+        url = f"https://open-images-dataset.s3.amazonaws.com/{split}/{image_id}.jpg"
         with urlopen(url, timeout=20) as response:
             data = response.read(20 * 1024 * 1024 + 1)
         if len(data) > 20 * 1024 * 1024:
             raise ValueError(f"Image over the size limit: {image_id}")
         with Image.open(BytesIO(data)) as im:
             im.verify()
-        image.write_bytes(data)
+        staging = image.with_suffix(".jpg.tmp")
+        staging.write_bytes(data)
+        staging.replace(image)
     return image
 
 
-def open_images(folder):
-    root = ROOT / "datasets/external/open_images_metadata_v5"
+def open_images(folder, root, split, images_per_class):
     with (root / "class-descriptions-boxable.csv").open(newline="") as file:
         names = {key: OPEN_LABELS[name] for key, name in csv.reader(file) if name in OPEN_LABELS}
-    meta = {row["ImageID"]: row for row in csv_rows(root / "validation-images-with-rotation.csv")
-            if row["Subset"] == "validation" and row["Rotation"] in ("", "0", "0.0")
+    meta = {row["ImageID"]: row for row in csv_rows(root / f"{split}-images-with-rotation.csv")
+            if row["Subset"] == split and row["Rotation"] in ("", "0", "0.0")
             and row["License"].rstrip("/") in ("https://creativecommons.org/licenses/by/2.0",
                                                "http://creativecommons.org/licenses/by/2.0")
             and row["Author"] and row["OriginalLandingURL"]}
     positives, negatives, incomplete = (defaultdict(set) for _ in range(3))
-    for row in csv_rows(root / "validation-annotations-human-imagelabels-boxable.csv"):
+    for row in csv_rows(root / f"{split}-annotations-human-imagelabels-boxable.csv"):
         if row["LabelName"] in names:
             group = positives if row["Confidence"] == "1" else negatives
             group[row["ImageID"]].add(names[row["LabelName"]])
     boxes = defaultdict(list)
-    for row in csv_rows(root / "validation-annotations-bbox.csv"):
+    for row in csv_rows(root / f"{split}-annotations-bbox.csv"):
         image_id = row["ImageID"]
         label = names.get(row["LabelName"])
         if image_id not in meta or label is None:
@@ -177,20 +178,21 @@ def open_images(folder):
             cohort[image_id] = label
             author_count[author] += 1
             selected.append(image_id)
-            if len(selected) == 5:
+            if len(selected) == images_per_class:
                 break
-        if len(selected) != 5:
+        if len(selected) != images_per_class:
             raise ValueError(f"Missing eligible Open Images positives for {label}: {len(selected)}")
 
     folder.mkdir(parents=True, exist_ok=True)
     with ThreadPoolExecutor(max_workers=8) as pool:
-        paths = list(pool.map(lambda key: download_image(key, folder), cohort))
+        paths = list(pool.map(lambda key: download_image(key, folder, split), cohort))
     result = []
+    cohort_name = "open_images_v5_test" if split == "test" else "open_images_v5"
     for image_id, path in zip(cohort, paths):
         boxed = {label for label, _ in boxes[image_id]}
         coverage = select_coverage(positives[image_id] & boxed, negatives[image_id] - boxed,
                                    incomplete[image_id] | (positives[image_id] & negatives[image_id]))
-        result.append(record(path, "open_images_v5", image_id,
+        result.append(record(path, cohort_name, image_id,
                              [(label, box) for label, box in boxes[image_id] if label in coverage],
                              coverage, anchor_class=cohort[image_id], author=meta[image_id]["Author"],
                              source=meta[image_id]["OriginalLandingURL"], license=meta[image_id]["License"]))
@@ -200,15 +202,26 @@ def open_images(folder):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--open-images-test", action="store_true",
+                        help="Sample only official Open Images V5 test images for public evaluation")
     args = parser.parse_args()
     output = args.output.resolve()
     if not output.is_relative_to(ROOT / "datasets") or (output / "manifest.json").exists():
         raise ValueError("Use a new manifest under the local datasets directory")
-    local = road_frames() + indoor_frames() + warehouse_frames()
-    frames = local + open_images(output / "images")
-    if not 120 <= len(frames) <= 180 or len({row["sha256"] for row in frames}) != len(frames):
-        raise ValueError("Benchmark sample size is out of bounds or contains exact duplicate images")
-    manifest = {"version": 1, "seed": SEED, "scope": "development only", "frames": frames}
+    external = ROOT / "datasets/external"
+    if args.open_images_test:
+        frames = open_images(output / "images", external / "open_images_test_v5_pilot/metadata",
+                             "test", 8)
+        scope = "public evaluation"
+    else:
+        frames = road_frames() + indoor_frames() + warehouse_frames()
+        frames += open_images(output / "images", external / "open_images_metadata_v5", "validation", 5)
+        if not 120 <= len(frames) <= 180:
+            raise ValueError("Development benchmark sample size is out of bounds")
+        scope = "development only"
+    if len({row["sha256"] for row in frames}) != len(frames):
+        raise ValueError("Benchmark contains exact duplicate images")
+    manifest = {"version": 1, "seed": SEED, "scope": scope, "frames": frames}
     text = json.dumps(manifest, sort_keys=True, indent=2) + "\n"
     (output / "manifest.tmp").write_text(text)
     (output / "manifest.tmp").replace(output / "manifest.json")
