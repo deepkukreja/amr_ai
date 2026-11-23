@@ -1,30 +1,11 @@
 import { clipLengthMs } from './camera-trial.js';
 import { createTrialRenderer } from './camera-trial-renderer.js';
-import { bufferDelay, decodeMarker, encodeMarker, feedHealth, frameLatency, markerCells, mediaRate, percentile } from './camera-transport-metrics.js';
+import { bufferDelay, feedHealth, frameLatency, mediaRate, percentile } from './camera-transport-metrics.js';
+import { createMarkerReader, frameSize, writeMarker } from './camera-frame-marker.js';
 
-const frameSize = { width: 512, height: 288 };
-const cellWidth = 8;
-const markerWidth = markerCells * cellWidth;
-const markerHeight = 16;
 const fps = 12;
 const freezeMs = 3_000;
 const recoveryWindowMs = 5_000;
-
-function writeMarker(context, sequence) {
-  encodeMarker(sequence).forEach((bit, index) => {
-    context.fillStyle = bit ? '#fff' : '#000';
-    context.fillRect(index * cellWidth, 0, cellWidth, markerHeight);
-  });
-}
-
-function readMarker(context, video) {
-  const scaleX = video.videoWidth / frameSize.width;
-  const scaleY = video.videoHeight / frameSize.height;
-  context.drawImage(video, 0, (markerHeight / 2 - 2) * scaleY, markerWidth * scaleX, 4 * scaleY,
-    0, 0, markerWidth, 1);
-  const { data } = context.getImageData(0, 0, markerWidth, 1);
-  return decodeMarker(Array.from({ length: markerCells }, (_, i) => data[(i * cellWidth + cellWidth / 2) * 4]));
-}
 
 async function videoStats(endpoint, type) {
   const stats = await endpoint.getStats();
@@ -116,10 +97,7 @@ export async function measureTransport(profile, videos, { signal, onStatus, onFe
       feed.sender = transceiver.sender;
       feed.streamId = stream.id;
     }
-    const markerCanvas = document.createElement('canvas');
-    markerCanvas.width = markerWidth;
-    markerCanvas.height = 1;
-    const markerContext = markerCanvas.getContext('2d', { willReadFrequently: true });
+    const readMarker = createMarkerReader();
 
     receiverPeer.ontrack = event => {
       const feed = feeds.find(item => item.streamId === event.streams[0]?.id);
@@ -129,7 +107,7 @@ export async function measureTransport(profile, videos, { signal, onStatus, onFe
       const presented = (_, metadata) => {
         feed.callback = video.requestVideoFrameCallback(presented);
         try {
-          const sequence = readMarker(markerContext, video);
+          const sequence = readMarker(video);
           const sentAt = feed.sent.get(sequence);
           const displayedAt = metadata.expectedDisplayTime;
           if (sentAt === undefined) {

@@ -32,6 +32,6 @@ Earlier diagnostic runs forced software rendering and observed frames more than 
 
 ## What to test next
 
-Run the same budgets with separate robot-side and operator-side hosts, actual camera streams and a constrained uplink. Compare stable throughput, latency tails, image detail during motion, and failed freezes or reconnects while moving the priority between directions. Measure WAN latency with a shared visible timing reference or calibrated clock synchronization. A join or reconnect also needs a first-frame time measurement.
+The [two-process camera link benchmark](camera-link-benchmark.md) exercises a front-to-rear priority switch and UDP impairment on one host. Carry the same experiment to separate robot-side and operator-side devices with actual camera streams. Compare stable throughput, latency tails, image detail during motion, and failed freezes or reconnects while moving the priority between directions. Measure WAN latency with a shared visible timing reference or calibrated clock synchronization. A join or reconnect also needs a first-frame time measurement.
 
 Use participant comparison results and camera coverage around a loaded chassis to choose which views are needed for each maneuver. This local diagnostic measures video transport behavior for a shared process and a synthetic scene.
