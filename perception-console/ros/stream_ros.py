@@ -19,6 +19,7 @@ from sensor_msgs.msg import CameraInfo, Image, PointCloud2
 from sensor_msgs_py import point_cloud2
 from tf2_ros import TransformException
 
+from depth_preview import depth_preview
 from read_nav2 import WorldReader, milliseconds, yaw_of
 
 
@@ -87,6 +88,7 @@ class StreamReader(WorldReader):
     def __init__(self, args):
         super().__init__(args.map_topic, args.plan_topic, args.base_frame)
         self.args = args
+        self.depth_topic = getattr(args, "depth_topic", None)
         self.session = uuid.uuid4().hex
         self.sequence = 0
         self.last_stamp = 0
@@ -97,10 +99,13 @@ class StreamReader(WorldReader):
         self.clouds = deque(maxlen=4)
         self.images = deque(maxlen=4)
         self.calibrations = deque(maxlen=4)
+        self.depth_images = deque(maxlen=4)
         self.create_subscription(PointCloud2, args.lidar_topic, self.cache(self.clouds), qos_profile_sensor_data)
         if args.camera_topic:
             self.create_subscription(Image, args.camera_topic, self.cache(self.images), qos_profile_sensor_data)
             self.create_subscription(CameraInfo, args.camera_info, self.cache(self.calibrations), qos_profile_sensor_data)
+        if self.depth_topic:
+            self.create_subscription(Image, self.depth_topic, self.cache(self.depth_images), qos_profile_sensor_data)
 
     @staticmethod
     def cache(queue):
@@ -203,12 +208,20 @@ class StreamReader(WorldReader):
             return output
         return None
 
+    def depth(self, now):
+        for message in self.recent(self.depth_images, now, 1000):
+            preview = depth_preview(message)
+            if preview and message.header.frame_id:
+                return {**preview, "frame": message.header.frame_id,
+                        "stampMs": milliseconds(message.header.stamp)}
+        return None
+
     def snapshot(self):
         now = self.get_clock().now().nanoseconds // 1_000_000
         if now < self.last_stamp:
             self.session, self.sequence = uuid.uuid4().hex, 0
             self.pose_stamp, self.pose_received = 0, 0
-            for buffer in (self.plans, self.clouds, self.images, self.calibrations):
+            for buffer in (self.plans, self.clouds, self.images, self.calibrations, self.depth_images):
                 buffer.clear()
         self.last_stamp = now
         if not now or self.map_data is None:
@@ -230,6 +243,7 @@ class StreamReader(WorldReader):
         plan = self.route(frame, now)
         cloud = self.cloud(frame, now)
         camera = self.camera(frame, now) if self.args.camera_topic else None
+        depth = self.depth(now) if self.depth_topic else None
 
         def health(sensor_id, name, sample, queue=None, age=1000):
             stamp = sample["stampMs"] if sample else None
@@ -240,15 +254,17 @@ class StreamReader(WorldReader):
             return {"id": sensor_id, "name": name, "status": status, "stampMs": stamp,
                     "ageMs": max(0, now - stamp) if stamp is not None else None}
 
+        sensors = [health("localization", "Map transform", pose), health("plan", "Nav2 path", plan, self.plans, 3000),
+                   health("lidar", "LiDAR", cloud, self.clouds), health("rgbd", "Front camera", camera, self.images)]
+        if self.depth_topic:
+            sensors.append(health("depth", "Depth camera", depth, self.depth_images))
         self.sequence += 1
         return {
             "version": 1, "session": self.session, "sequence": self.sequence, "site": self.args.site,
             "stampMs": now, "frame": frame, "source": "ROS_SENSOR_FIXTURE" if self.args.fixture else "ROS_MONITOR",
             "clock": "ROS_SIM" if self.get_parameter("use_sim_time").value else "ROS_SYSTEM",
             "mode": self.args.mode.upper(), "robotModel": self.args.robot_model, "occupancy": self.map_data,
-            "pose": pose, "plan": plan, "cloud": cloud, "camera": camera,
-            "sensors": [health("localization", "Map transform", pose), health("plan", "Nav2 path", plan, self.plans, 3000),
-                        health("lidar", "LiDAR", cloud, self.clouds), health("rgbd", "Front camera", camera, self.images)],
+            "pose": pose, "plan": plan, "cloud": cloud, "camera": camera, "depth": depth, "sensors": sensors,
         }
 
 
@@ -282,6 +298,7 @@ def main():
     parser.add_argument("--lidar-topic", default="/lidar_3d/points")
     parser.add_argument("--camera-topic")
     parser.add_argument("--camera-info")
+    parser.add_argument("--depth-topic", help="Optional REP-118 depth image in its source optical frame")
     parser.add_argument("--robot-model", choices=("d3-prototype",))
     args, ros_args = parser.parse_known_args()
     if bool(args.camera_topic) != bool(args.camera_info):

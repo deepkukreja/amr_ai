@@ -19,6 +19,32 @@ const snapshot = {
   sensors: [{ id: 'lidar', name: 'LiDAR', status: 'fresh', ageMs: 30, stampMs: 970 }],
 };
 
+const depth = { frame: 'depth_optical', stampMs: 995, width: 2, height: 1, mm16: '6AMAAA==' };
+
+test('depth is optional, keeps its own optical frame and ages independently of RGB', () => {
+  assert.equal(acceptWorld(snapshot).depth, null);
+  const valid = acceptWorld({ ...snapshot, depth });
+  assert.deepEqual(valid.depth, depth);
+  assert.ok(valid.camera);
+  assert.ok(valid.cloud);
+  for (const candidate of [
+    { ...depth, stampMs: 1001 },
+    { ...depth, frame: '' },
+    { ...depth, width: 161 },
+    { ...depth, height: 2 },
+    { ...depth, mm16: '6AMAAA!?' },
+    { ...depth, width: 3, mm16: 'AAAAAAA\n' },
+  ]) {
+    const invalid = acceptWorld({ ...snapshot, depth: candidate,
+      sensors: [{ id: 'depth', name: 'Depth camera', status: 'fresh' }] });
+    assert.equal(invalid.depth, null);
+    assert.equal(invalid.sensors[0].status, 'unregistered');
+    assert.deepEqual(invalid.camera, valid.camera);
+    assert.deepEqual(invalid.cloud, valid.cloud);
+  }
+  assert.equal(acceptWorld({ ...snapshot, stampMs: 2200, depth }).depth, null);
+});
+
 test('an on-disk snapshot alone cannot establish a running source', () => {
   const seen = sequenceGate();
   assert.equal(seen(snapshot), false);
@@ -58,11 +84,12 @@ test('the HTTP stream skips an old file and delivers the next advancing snapshot
   const response = await fetch(`${base}/api/v1/world?scenario=ros-world`, { signal: AbortSignal.timeout(4500) });
   const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
   await delay(500);
-  await writeFile(file, JSON.stringify({ ...snapshot, sequence: 2 }));
+  await writeFile(file, JSON.stringify({ ...snapshot, sequence: 2, depth }));
   let raw = '';
   while (!raw.includes('\n\n')) raw += (await reader.read()).value;
   const frame = JSON.parse(raw.split('\ndata: ')[1].trim());
   await reader.cancel();
   assert.equal(frame.sequence, 2);
   assert.deepEqual(frame.cloud.points, snapshot.cloud.points);
+  assert.deepEqual(frame.depth, depth);
 });

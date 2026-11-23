@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { createScene } from './scene.js';
 import { CameraPreview } from './CameraPreview.jsx';
+import { DepthPreview } from './DepthPreview.jsx';
 import wordmark from './wordmark.webp';
 import '../../design/robot-buildworks-theme.css';
 import './style.css';
@@ -85,7 +86,7 @@ function IconButton({ icon: Icon, label, onClick, disabled }) {
   </button>;
 }
 
-function WorldView({ profiles, environment, snapshot, view, setView, selected, transport }) {
+function WorldView({ profiles, environment, snapshot, view, setView, selected, transport, streamOnly }) {
   const canvas = useRef(null);
   const labels = useRef(null);
   const surface = useRef(null);
@@ -111,6 +112,8 @@ function WorldView({ profiles, environment, snapshot, view, setView, selected, t
   useEffect(() => { renderer.current?.select(selected); }, [selected]);
 
   const obstacle = snapshot?.events[0];
+  const depthView = view === 'depth';
+  const imageView = depthView || view === 'camera';
   const showCloud = view === 'cloud' || view === 'debug';
   const captured = hasCapturedMap(snapshot);
   const stream = snapshot?.provenance === 'ROS_STREAM';
@@ -122,14 +125,15 @@ function WorldView({ profiles, environment, snapshot, view, setView, selected, t
       <label className="view-control"><span>View</span>
         <select aria-label="Visualization mode" value={view} onChange={event => setView(event.target.value)}>
           {views.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+          {streamOnly && <option value="depth">Front depth</option>}
         </select>
       </label>
     </div>
-    <div className="viewport" ref={surface} data-camera={view === 'camera'}>
+    <div className="viewport" ref={surface} data-camera={imageView}>
       <div className="canvas-host" ref={canvas} />
       <div className="scene-labels" ref={labels} aria-hidden="true" />
-      {rendererError && <div className="viewport-message" role="status">{rendererError}</div>}
-      {!rendererError && (!snapshot || transport === 'offline') && <div className="viewport-message" role="status">
+      {!imageView && rendererError && <div className="viewport-message" role="status">{rendererError}</div>}
+      {(!rendererError || imageView) && (!snapshot || transport === 'offline') && <div className="viewport-message" role="status">
         {transport === 'offline' ? 'World bridge disconnected. Last received frame may be shown.' : 'Waiting for the first world snapshot…'}
       </div>}
       {!rendererError && showCloud && snapshot && <div className="scene-info mono">
@@ -137,7 +141,9 @@ function WorldView({ profiles, environment, snapshot, view, setView, selected, t
         {view === 'debug' && <><br />{snapshot.frame} · #{snapshot.sequence}<br />
           {pose ? `X ${pose.x.toFixed(2)} · Y ${pose.y.toFixed(2)} · Yaw ${radToDeg(pose.yaw).toFixed(1)}°` : 'Pose unavailable'}</>}
       </div>}
-      <CameraPreview camera={snapshot?.camera} expanded={view === 'camera'} open={() => setView('camera')} />
+      {depthView
+        ? snapshot && transport !== 'offline' && <DepthPreview depth={snapshot.depth} />
+        : <CameraPreview camera={snapshot?.camera} expanded={view === 'camera'} open={() => setView('camera')} />}
       {obstacle && <div className="viewport-warning"><TriangleAlert size={15} aria-hidden="true" /> {obstacle.label}</div>}
       <div className="legend">
         {view === 'occupancy' || captured || stream ? <>
@@ -170,7 +176,7 @@ function WorldView({ profiles, environment, snapshot, view, setView, selected, t
           : transport === 'offline' ? 'Bridge disconnected' : 'Connecting'
       }</span>
       <span>{snapshot?.frame ?? 'Frame unavailable'}{snapshot ? `  /  #${String(snapshot.sequence).padStart(3, '0')}` : ''}</span>
-      <span>Drag to orbit · Scroll to zoom</span>
+      {!imageView && <span>Drag to orbit · Scroll to zoom</span>}
     </div>
   </section>;
 }
@@ -320,7 +326,7 @@ function App() {
   const streamOnly = option?.streamOnly;
   const world = replay ? replayFrame || null : active?.scenario === scenario ? active : null;
   const snapshot = streamOnly && state === 'offline' && world ? {
-    ...world, cloud: null, camera: null, robot: { ...world.robot, pose: null, localization: { status: 'unavailable' } },
+    ...world, cloud: null, camera: null, depth: null, robot: { ...world.robot, pose: null, localization: { status: 'unavailable' } },
     nav: { ...world.nav, state: 'Plan unavailable', planned: [] },
   } : world;
   const environment = config?.environments[option?.site];
@@ -394,7 +400,7 @@ function App() {
             const mode = !next.streamOnly && (next.replayOnly || replay);
             setScenario(next.id);
             setReplay(mode);
-            if (next.streamOnly || next.replayOnly) setView(next.streamOnly || next.snapshotOnly ? 'follow' : 'occupancy');
+            if (next.streamOnly || next.replayOnly || view === 'depth') setView(next.replayOnly && !next.snapshotOnly ? 'occupancy' : 'follow');
             resetTimeline(mode);
           }}>
             {!config && <option>Loading…</option>}
@@ -417,7 +423,7 @@ function App() {
       {setupError && <p className="setup-error" role="alert">Configuration unavailable. {setupError}. Reload after starting the bridge.</p>}
       <div className="workspace">
         <WorldView profiles={config?.robotProfiles} environment={environment} snapshot={snapshot}
-          view={view} setView={setView} selected={selected} transport={transport} />
+          view={view} setView={setView} selected={selected} transport={transport} streamOnly={streamOnly} />
         <Inspector frame={snapshot} selected={selected} setSelected={setSelected} transport={transport} />
       </div>
       {!snapshotOnly && !streamOnly && <Timeline recording={recording} snapshot={snapshot} replay={replay} ready={ready} playing={playing}

@@ -7,6 +7,15 @@ const tuple = (value, size) => Array.isArray(value) && value.length === size && 
 const points = (value, max) => Array.isArray(value) && value.length <= max && value.every(point => tuple(point, 3));
 const fresh = (value, now, allowedAge) => stamp(value) && value <= now && now - value <= allowedAge;
 
+function acceptDepth(depth, now) {
+  if (!depth || typeof depth.frame !== 'string' || !depth.frame.trim() || !fresh(depth.stampMs, now, 1000)
+    || ![depth.width, depth.height].every(size => Number.isInteger(size) && size > 0 && size <= 160)) return null;
+  const bytes = 2 * depth.width * depth.height;
+  if (typeof depth.mm16 !== 'string' || depth.mm16.length !== 4 * Math.ceil(bytes / 3)
+    || !/^[A-Za-z0-9+/]+={0,2}$/.test(depth.mm16) || Buffer.byteLength(depth.mm16, 'base64') !== bytes) return null;
+  return depth;
+}
+
 export function sequenceGate() {
   let marker;
   return frame => {
@@ -40,6 +49,7 @@ export function acceptWorld(input) {
     && fresh(layer.stampMs, now, age) && points(layer.points, max);
   const plan = registered(input.plan, 3000, 2000) ? input.plan : null;
   const cloud = registered(input.cloud, 1000, 1000) ? input.cloud : null;
+  const depth = acceptDepth(input.depth, now);
   const image = input.camera;
   let camera = null;
   if (image && typeof image.frame === 'string' && fresh(image.stampMs, now, 1000)
@@ -55,6 +65,7 @@ export function acceptWorld(input) {
   const rejected = new Set();
   if (input.cloud && !cloud) rejected.add('lidar');
   if (input.camera && !camera) rejected.add('rgbd');
+  if (input.depth && !depth) rejected.add('depth');
   if (input.pose && !pose) rejected.add('localization');
   if (input.plan && !plan) rejected.add('plan');
   const sensors = (Array.isArray(input.sensors) ? input.sensors : []).slice(0, 8).filter(sensor => typeof sensor?.id === 'string'
@@ -62,7 +73,7 @@ export function acceptWorld(input) {
     .map(sensor => ({ ...sensor, ...(rejected.has(sensor.id) ? { status: 'unregistered', ageMs: null } : {}) }));
   const d3 = input.robotModel === 'd3-prototype' || input.source === 'ROS_SENSOR_FIXTURE';
   return {
-    ...input, pose, plan, cloud, camera, sensors, version: 1, provenance: 'ROS_STREAM', scenario: rosWorld.id,
+    ...input, pose, plan, cloud, camera, depth, sensors, version: 1, provenance: 'ROS_STREAM', scenario: rosWorld.id,
     robot: {
       name: d3 ? 'D3 · Design profile' : 'ROS robot', modelId: d3 ? 'd3-prototype' : null, pose,
       speed: null, steering: null, battery: null, localization: { status: pose ? 'transform available' : 'unavailable', varianceM2: null },

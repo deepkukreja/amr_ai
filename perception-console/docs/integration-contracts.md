@@ -15,6 +15,8 @@ Source adapters supply acquisition time and provenance independently of receipt 
 
 Single Nav2 planning captures also use replay presentation. They retain the ROS map/pose/path frame and source stamp, have no timeline, and omit motion or sensor telemetry. See the [Nav2 capture contract and fixture](nav2-plan-view.md).
 
+The optional ROS `depth` channel carries `frame`, `stampMs`, `width`, `height` and `mm16`. The frame is the depth image's optical frame. The base64 buffer stores the complete row-major image as little-endian unsigned 16-bit optical depth in millimetres, with zero for unknown. Each dimension is at most 160 pixels. Depth has an independent one-second freshness limit and clears when the browser loses the stream. This preview is sampled in camera image space. RGB association and map registration require their own calibration and time checks.
+
 ## Upstream topic and model boundaries
 
 Topic profiles are launch-specific and remappable. The targets below are starting budgets in steady operation. Verify each rate, frame, QoS and topic publisher from the actual graph before adopting a profile.
