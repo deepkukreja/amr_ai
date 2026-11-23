@@ -205,3 +205,5 @@ curl -fL --retry 2 -o "$sample/bbox2d.zip" https://pegaso.citic.udc.es/urbansyn/
 The label archive SHA-256 is `1127f4b565a7d7cb4aab1d236b144445c9574d2605f95cc879ba0a0f7b414a0f`. The local sample manifest SHA-256 is `0759866e4976ba1bc7eb968b92d39e89e657a79b520e34d7ba9310d5b3bd1ac8`. The source audit excluded 24 frames with invalid target geometry among 7,539 records.
 
 The real-road follow-up uses the [BDD100K research pilot](bdd100k_rider_pilot.md) for separate pedestrian, rider, bicycle and motorcycle boxes.
+
+See the [Indian-road rider plan](indian_road_rider_plan.md) for the label audit, external benchmark choice and controlled follow-up experiment.
